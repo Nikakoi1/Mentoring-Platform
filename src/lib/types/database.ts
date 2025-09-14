@@ -18,13 +18,20 @@ export type NotificationPriority = 'low' | 'medium' | 'high'
 export type MessageType = 'direct' | 'session_note' | 'system'
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced'
 
+export interface Milestone {
+  id: string;
+  title: string;
+  status: 'pending' | 'completed';
+  target_date?: string;
+}
+
 // Database Tables
 export interface User {
   id: string
   email: string
   full_name?: string
   role: UserRole
-  profile?: Record<string, any>
+  profile?: Record<string, unknown>
   avatar_url?: string
   phone?: string
   location?: string
@@ -42,7 +49,7 @@ export interface Mentor {
   expertise_areas?: string[]
   years_experience?: number
   max_mentees: number
-  availability?: Record<string, any>
+  availability?: Record<string, unknown>
   linkedin_url?: string
   github_url?: string
   website_url?: string
@@ -109,8 +116,8 @@ export interface Assessment {
   mentor_id?: string
   assessment_type: AssessmentType
   title: string
-  questions: Record<string, any>
-  responses?: Record<string, any>
+  questions: Record<string, unknown>
+  responses?: Record<string, unknown>
   score?: number
   max_score?: number
   feedback?: string
@@ -130,7 +137,7 @@ export interface Goal {
   priority: GoalPriority
   status: GoalStatus
   progress_percentage: number
-  milestones?: any[]
+  milestones?: Milestone[]
   created_at: string
   updated_at: string
 }
@@ -164,7 +171,7 @@ export interface ProgressEntry {
   entry_type: ProgressEntryType
   title: string
   content?: string
-  metrics?: Record<string, any>
+  metrics?: Record<string, unknown>
   attachments?: string[]
   visibility: ProgressVisibility
   created_at: string
@@ -236,6 +243,15 @@ export interface MentorStats {
   upcoming_sessions: number
 }
 
+export interface PlatformAnalytics {
+  totalUsers: number;
+  totalMentors: number;
+  totalMentees: number;
+  activePairings: number;
+  sessionsThisMonth: number;
+  averageSessionRating: number;
+}
+
 // Form types
 export interface CreateUserForm {
   email: string
@@ -287,7 +303,7 @@ export interface CreateGoalForm {
 }
 
 // Database function return types
-export type DatabaseFunction<T = any> = {
+export type DatabaseFunction<T = unknown> = {
   data: T | null
   error: Error | null
 }

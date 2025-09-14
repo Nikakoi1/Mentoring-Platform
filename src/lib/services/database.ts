@@ -16,6 +16,7 @@ import type {
   SessionWithUsers,
   MenteeProgress,
   MentorStats,
+  PlatformAnalytics,
   CreateSessionForm,
   CreateGoalForm,
   DatabaseFunction
@@ -88,7 +89,7 @@ export const getAllUsers = async (): Promise<DatabaseFunction<User[]>> => {
   return { data, error }
 }
 
-export const getPlatformAnalytics = async (): Promise<DatabaseFunction<any>> => {
+export const getPlatformAnalytics = async (): Promise<DatabaseFunction<PlatformAnalytics>> => {
   const { data, error } = await supabase.rpc('get_platform_analytics')
   return { data, error }
 }

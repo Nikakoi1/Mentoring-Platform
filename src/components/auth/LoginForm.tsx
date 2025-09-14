@@ -27,7 +27,7 @@ export function LoginForm() {
 
       // Get user profile to determine role-based redirect
       if (authData.user) {
-        const { data: profile, error: profileError } = await getUserProfile(authData.user.id)
+        const { data: _profile, error: profileError } = await getUserProfile(authData.user.id)
         
         if (profileError) {
           console.warn('Could not fetch user profile:', profileError)
@@ -37,8 +37,14 @@ export function LoginForm() {
 
         router.push('/dashboard')
       }
-    } catch (error: any) {
-      setError(error.error_description || error.message)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        setError(String((error as { message: string }).message));
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false)
     }
@@ -105,7 +111,7 @@ export function LoginForm() {
       
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <a href="/register" className="text-blue-600 hover:underline">
             Sign up
           </a>

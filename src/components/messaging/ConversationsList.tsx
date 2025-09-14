@@ -42,7 +42,7 @@ export function ConversationsList() {
         <h1 className="text-2xl font-bold mb-6">Your Conversations</h1>
         {pairings.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">You don't have any active conversations.</p>
+            <p className="text-gray-500">You don&apos;t have any active conversations.</p>
           </div>
         ) : (
           <div className="space-y-4">

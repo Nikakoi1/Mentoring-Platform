@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getUserPairings, getPairingProgress } from '@/lib/services/database'
-import type { PairingWithUsers, ProgressEntry } from '@/lib/types/database'
+import type { ProgressEntry } from '@/lib/types/database'
 
 interface ProgressEntryWithMentee extends ProgressEntry {
   menteeName: string;
@@ -72,7 +72,7 @@ export function ProgressReports() {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-6">Mentees' Progress Reports</h1>
+        <h1 className="text-2xl font-bold mb-6">Mentees&apos; Progress Reports</h1>
         {progressEntries.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No progress has been logged by your mentees yet.</p>

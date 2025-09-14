@@ -137,7 +137,7 @@ export function MenteeDashboard() {
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">You're not currently paired with any mentors.</p>
+            <p className="text-gray-500 mb-4">You&apos;re not currently paired with any mentors.</p>
             <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
               Find a Mentor
             </button>

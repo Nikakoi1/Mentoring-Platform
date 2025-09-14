@@ -91,9 +91,15 @@ export function UploadResourceForm() {
 
       alert('Resource uploaded successfully!')
       router.push('/resources')
-    } catch (err: any) {
-      setError(`Upload failed: ${err.message}`)
-      console.error(err)
+    } catch (err: unknown) {
+      let message = 'An unknown error occurred.';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        message = String((err as { message: string }).message);
+      }
+      setError(`Upload failed: ${message}`);
+      console.error(err);
     } finally {
       setSubmitting(false)
     }

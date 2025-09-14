@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createSession, getUserPairings } from '@/lib/services/database'
-import type { PairingWithUsers, CreateSessionForm as CreateSessionFormType } from '@/lib/types/database'
+import type { PairingWithUsers } from '@/lib/types/database'
 
 export function ScheduleSessionForm() {
   const { user } = useAuth()
@@ -79,7 +79,7 @@ export function ScheduleSessionForm() {
   if (pairings.length === 0) {
     return (
       <div className="text-center p-8 bg-white rounded-lg shadow">
-        <p className="text-gray-600">You don't have any active mentees to schedule a session with.</p>
+        <p className="text-gray-600">You don&apos;t have any active mentees to schedule a session with.</p>
       </div>
     )
   }

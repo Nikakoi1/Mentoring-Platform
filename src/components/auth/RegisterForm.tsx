@@ -36,8 +36,14 @@ export function RegisterForm() {
       // Show success message
       alert('Registration successful! Please check your email to verify your account.')
       router.push('/login')
-    } catch (error: any) {
-      setError(error.error_description || error.message)
+    } catch (error: unknown) {
+       if (error instanceof Error) {
+        setError(error.message);
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        setError(String((error as { message: string }).message));
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false)
     }
