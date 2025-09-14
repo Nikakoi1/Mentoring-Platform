@@ -27,7 +27,7 @@ export function LoginForm() {
 
       // Get user profile to determine role-based redirect
       if (authData.user) {
-        const { data: _profile, error: profileError } = await getUserProfile(authData.user.id)
+        const { error: profileError } = await getUserProfile(authData.user.id)
         
         if (profileError) {
           console.warn('Could not fetch user profile:', profileError)
