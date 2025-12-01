@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,6 +9,7 @@ import { useTranslations } from '@/hooks/useTranslations'
 
 export default function Home() {
   const { user, loading } = useAuth()
+  const router = useRouter()
   const { t } = useTranslations({
     namespace: 'home',
     defaults: {
@@ -38,6 +41,25 @@ export default function Home() {
     }
   })
 
+  useEffect(() => {
+    // Redirect unauthenticated users to login
+    if (!loading && !user) {
+      router.push('/login')
+      return
+    }
+  }, [user, loading, router])
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Navigation */}
@@ -48,37 +70,12 @@ export default function Home() {
               <h1 className="text-xl font-bold text-gray-900">{t('nav.brand')}</h1>
             </div>
             <div className="flex items-center space-x-4">
-              {loading ? (
-                <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
-              ) : user ? (
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  {t('nav.dashboard')}
-                </Link>
-              ) : (
-                <div className="space-x-2">
-                  <a
-                    href="/login"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    {t('nav.signIn')}
-                  </a>
-                  <a
-                    href="/register/mentor"
-                    className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 font-medium text-sm"
-                  >
-                    {t('nav.registerMentor')}
-                  </a>
-                  <a
-                    href="/register/mentee"
-                    className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 font-medium text-sm"
-                  >
-                    {t('nav.registerMentee')}
-                  </a>
-                </div>
-              )}
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {t('nav.dashboard')}
+              </Link>
             </div>
           </div>
         </div>
@@ -95,35 +92,12 @@ export default function Home() {
             {t('hero.description')}
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-colors"
-              >
-                {t('hero.ctaPrimary')}
-              </Link>
-            ) : (
-              <div className="space-y-3 sm:space-y-0 sm:space-x-3 sm:flex">
-                <Link
-                  href="/register/mentor"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-colors"
-                >
-                  {t('nav.registerMentor')}
-                </Link>
-                <Link
-                  href="/register/mentee"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-4 md:text-lg md:px-10 transition-colors"
-                >
-                  {t('nav.registerMentee')}
-                </Link>
-                <a
-                  href="#features"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10 transition-colors"
-                >
-                  {t('hero.ctaLearnMore')}
-                </a>
-              </div>
-            )}
+            <Link
+              href="/dashboard"
+              className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-colors"
+            >
+              {t('hero.ctaPrimary')}
+            </Link>
           </div>
         </div>
 
