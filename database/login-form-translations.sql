@@ -10,10 +10,10 @@ ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
   value = EXCLUDED.value,
   updated_at = CURRENT_TIMESTAMP;
 
--- Georgian translations (broken into two lines for better UI)
+-- Georgian translations (using CSS line breaks instead of HTML)
 INSERT INTO public.translations (namespace, translation_key, locale, value, auto_generated) VALUES
-('auth.login', 'register.mentor', 'ka', 'დარეგისტრირდი<br/>მენტორად', false),
-('auth.login', 'register.mentee', 'ka', 'დარეგისტრირდი<br/>მოსწავლედ', false),
+('auth.login', 'register.mentor', 'ka', 'დარეგისტრირდი მენტორად', false),
+('auth.login', 'register.mentee', 'ka', 'დარეგისტრირდი მოსწავლედ', false),
 ('auth.login', 'register.or', 'ka', 'ან', false)
 ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
   value = EXCLUDED.value,
