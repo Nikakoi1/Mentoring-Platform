@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useLanguage } from '@/contexts/LanguageContext'
 import { getTranslationsByNamespaces } from '@/lib/services/database'
@@ -30,8 +30,11 @@ export function useTranslations({ namespace, defaults = {} }: UseTranslationsOpt
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const requestIdRef = useRef(0)
+  const defaultsRef = useRef(defaults)
 
-  const stableDefaults = useMemo(() => defaults, [defaults])
+  useEffect(() => {
+    defaultsRef.current = defaults
+  }, [defaults])
 
   const loadTranslations = useCallback(async () => {
     const requestId = ++requestIdRef.current
@@ -58,7 +61,7 @@ export function useTranslations({ namespace, defaults = {} }: UseTranslationsOpt
       return acc
     }, {})
 
-    const merged = { ...stableDefaults, ...serverMap }
+    const merged = { ...defaultsRef.current, ...serverMap }
 
     setCache((prev) => ({
       ...prev,
@@ -66,7 +69,7 @@ export function useTranslations({ namespace, defaults = {} }: UseTranslationsOpt
     }))
     setActiveLocale(locale)
     setLoading(false)
-  }, [locale, namespace, stableDefaults])
+  }, [locale, namespace])
 
   useEffect(() => {
     const cached = cache[locale]
@@ -80,7 +83,7 @@ export function useTranslations({ namespace, defaults = {} }: UseTranslationsOpt
     loadTranslations()
   }, [locale, namespace, loadTranslations])
 
-  const translations = cache[activeLocale] ?? stableDefaults
+  const translations = cache[activeLocale] ?? defaultsRef.current
 
   const t = useCallback((key: string, fallback?: string) => {
     return translations[key] ?? fallback ?? key
