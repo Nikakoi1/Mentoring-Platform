@@ -29,7 +29,7 @@ export function LoginForm() {
       'footer.prompt': "Don't have an account?",
       'footer.link': 'Sign up',
       // Georgian translations
-      'ka.title': 'მოგესალმეთ კვლავ',
+      'ka.title': 'მოგესალმებით',
       'ka.subtitle': 'შედით თქვენს მენტორინგის პლატფორმის ანგარიშზე',
       'ka.labels.email': 'ელფოსტა',
       'ka.placeholders.email': 'შეიყვანეთ თქვენი ელფოსტა',

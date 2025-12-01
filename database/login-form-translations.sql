@@ -21,7 +21,7 @@ ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
 
 -- Add missing Georgian login form translations if they don't exist
 INSERT INTO public.translations (namespace, translation_key, locale, value, auto_generated) VALUES
-('auth.login', 'title', 'ka', 'მოგესალმეთ კვლავ', false),
+('auth.login', 'title', 'ka', 'მოგესალმებით', false),
 ('auth.login', 'subtitle', 'ka', 'შედით თქვენს მენტორინგის პლატფორმის ანგარიშზე', false),
 ('auth.login', 'labels.email', 'ka', 'ელფოსტა', false),
 ('auth.login', 'placeholders.email', 'ka', 'შეიყვანეთ თქვენი ელფოსტა', false),
