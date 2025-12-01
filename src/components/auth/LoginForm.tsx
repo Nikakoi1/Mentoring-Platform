@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import { supabase } from '@/lib/supabase/client'
 import { getUserProfile } from '@/lib/services/database'
@@ -13,6 +13,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t } = useTranslations({
     namespace: 'auth.login',
     defaults: {
@@ -29,6 +30,14 @@ export function LoginForm() {
       'footer.link': 'Sign up'
     }
   })
+
+  // Determine registration redirect based on referrer
+  const getRegistrationRedirect = () => {
+    const from = searchParams.get('from')
+    if (from === 'mentor') return '/register/mentor'
+    if (from === 'mentee') return '/register/mentee'
+    return '/register' // fallback to general registration
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,7 +140,7 @@ export function LoginForm() {
       <div className="text-center">
         <p className="text-sm text-gray-600">
           {t('footer.prompt')}{' '}
-          <a href="/register" className="text-blue-600 hover:underline">
+          <a href={getRegistrationRedirect()} className="text-blue-600 hover:underline">
             {t('footer.link')}
           </a>
         </p>

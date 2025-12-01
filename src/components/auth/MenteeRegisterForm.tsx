@@ -65,7 +65,7 @@ export function MenteeRegisterForm() {
       if (error) throw error
 
       alert(t('success'))
-      router.push('/login')
+      router.push('/login?from=mentee')
     } catch (error: unknown) {
        if (error instanceof Error) {
         // Handle common Supabase errors with user-friendly messages
