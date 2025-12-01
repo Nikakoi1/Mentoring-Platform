@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslations } from '@/hooks/useTranslations'
 import { createPairing, getAllUsers } from '@/lib/services/database'
 import type { User } from '@/lib/types/database'
 
@@ -17,17 +18,37 @@ export function CreatePairingForm() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const { t } = useTranslations({
+    namespace: 'adminPairingsCreate',
+    defaults: {
+      title: 'Create a New Pairing',
+      subtitle: 'Assign a mentor to a mentee to begin their journey.',
+      mentorLabel: 'Select Mentor',
+      mentorPlaceholder: '-- Select a mentor --',
+      menteeLabel: 'Select Mentee',
+      menteePlaceholder: '-- Select a mentee --',
+      loading: 'Loading mentors and mentees...',
+      noPermission: 'You do not have permission to perform this action.',
+      loadError: 'Failed to load users. Please try again later.',
+      validationSelectBoth: 'Please select both a mentor and a mentee.',
+      success: 'Pairing created successfully!',
+      buttonCreate: 'Create Pairing',
+      buttonCreating: 'Creating Pairing...',
+      errorGeneric: 'Something went wrong. Please try again.'
+    }
+  })
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (userProfile?.role !== 'coordinator') {
-        setError('You do not have permission to perform this action.')
+        setError(t('noPermission'))
         setLoading(false)
         return
       }
       setLoading(true)
       const { data, error } = await getAllUsers()
       if (error) {
-        setError('Failed to load users. Please try again later.')
+        setError(t('loadError'))
         console.error(error)
       } else if (data) {
         setMentors(data.filter(u => u.role === 'mentor' && u.active))
@@ -41,7 +62,7 @@ export function CreatePairingForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedMentorId || !selectedMenteeId) {
-      setError('Please select both a mentor and a mentee.')
+      setError(t('validationSelectBoth'))
       return
     }
     setSubmitting(true)
@@ -58,16 +79,16 @@ export function CreatePairingForm() {
     const { error: createError } = await createPairing(pairingData)
 
     if (createError) {
-      setError(createError.message)
+      setError(createError.message ?? t('errorGeneric'))
     } else {
-      alert('Pairing created successfully!')
+      alert(t('success'))
       router.push('/admin/users') // Redirect to user management or a new pairings page
     }
     setSubmitting(false)
   }
 
   if (loading) {
-    return <div className="text-center p-8">Loading mentors and mentees...</div>
+    return <div className="text-center p-8">{t('loading')}</div>
   }
 
   if (error && !loading) {
@@ -77,21 +98,21 @@ export function CreatePairingForm() {
   return (
     <div className="w-full max-w-2xl mx-auto p-8 space-y-8 rounded-lg border bg-white shadow-lg">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold">Create a New Pairing</h1>
-        <p className="text-sm text-gray-600">Assign a mentor to a mentee to begin their journey.</p>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-sm text-gray-600">{t('subtitle')}</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Select Mentor</label>
+            <label className="block text-sm font-medium mb-1">{t('mentorLabel')}</label>
             <select
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedMentorId}
               onChange={(e) => setSelectedMentorId(e.target.value)}
               required
             >
-              <option value="" disabled>-- Select a mentor --</option>
+              <option value="" disabled>{t('mentorPlaceholder')}</option>
               {mentors.map(mentor => (
                 <option key={mentor.id} value={mentor.id}>
                   {mentor.full_name || mentor.email}
@@ -101,14 +122,14 @@ export function CreatePairingForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Select Mentee</label>
+            <label className="block text-sm font-medium mb-1">{t('menteeLabel')}</label>
             <select
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedMenteeId}
               onChange={(e) => setSelectedMenteeId(e.target.value)}
               required
             >
-              <option value="" disabled>-- Select a mentee --</option>
+              <option value="" disabled>{t('menteePlaceholder')}</option>
               {mentees.map(mentee => (
                 <option key={mentee.id} value={mentee.id}>
                   {mentee.full_name || mentee.email}
@@ -129,7 +150,7 @@ export function CreatePairingForm() {
           className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           disabled={submitting}
         >
-          {submitting ? 'Creating Pairing...' : 'Create Pairing'}
+          {submitting ? t('buttonCreating') : t('buttonCreate')}
         </button>
       </form>
     </div>

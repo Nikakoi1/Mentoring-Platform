@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+
 import { supabase } from '@/lib/supabase/client'
 import { getUserProfile } from '@/lib/services/database'
+import { useTranslations } from '@/hooks/useTranslations'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -11,6 +13,22 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { t } = useTranslations({
+    namespace: 'auth.login',
+    defaults: {
+      'title': 'Welcome back',
+      'subtitle': 'Sign in to your mentoring platform account',
+      'labels.email': 'Email',
+      'placeholders.email': 'Enter your email',
+      'labels.password': 'Password',
+      'placeholders.password': 'Enter your password',
+      'forgotPassword': 'Forgot password?',
+      'cta.loading': 'Signing in...',
+      'cta.submit': 'Sign in',
+      'footer.prompt': "Don't have an account?",
+      'footer.link': 'Sign up'
+    }
+  })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,21 +71,21 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md p-8 space-y-8 rounded-lg border bg-white shadow-lg">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-        <p className="text-sm text-gray-600">Sign in to your mentoring platform account</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
+        <p className="text-sm text-gray-600">{t('subtitle')}</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleLogin}>
         <div className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              {t('labels.email')}
             </label>
             <input
               id="email"
               type="email"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
+              placeholder={t('placeholders.email')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -76,17 +94,17 @@ export function LoginForm() {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('labels.password')}
               </label>
               <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot password?
+                {t('forgotPassword')}
               </a>
             </div>
             <input
               id="password"
               type="password"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your password"
+              placeholder={t('placeholders.password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -105,15 +123,15 @@ export function LoginForm() {
           className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           disabled={loading}
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? t('cta.loading') : t('cta.submit')}
         </button>
       </form>
       
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
+          {t('footer.prompt')}{' '}
           <a href="/register" className="text-blue-600 hover:underline">
-            Sign up
+            {t('footer.link')}
           </a>
         </p>
       </div>
