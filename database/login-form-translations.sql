@@ -2,36 +2,36 @@
 -- This adds Georgian translations for the login form registration options
 
 -- English translations (already exist, but adding for completeness)
-INSERT INTO translations (namespace, locale, key, value) VALUES
-('auth.login', 'en', 'register.mentor', 'Register as Mentor'),
-('auth.login', 'en', 'register.mentee', 'Register as Mentee'),
-('auth.login', 'en', 'register.or', 'or')
-ON CONFLICT (namespace, locale, key) DO UPDATE SET
+INSERT INTO public.translations (namespace, translation_key, locale, value, auto_generated) VALUES
+('auth.login', 'register.mentor', 'en', 'Register as Mentor', false),
+('auth.login', 'register.mentee', 'en', 'Register as Mentee', false),
+('auth.login', 'register.or', 'en', 'or', false)
+ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
   value = EXCLUDED.value,
   updated_at = CURRENT_TIMESTAMP;
 
--- Georgian translations
-INSERT INTO translations (namespace, locale, key, value) VALUES
-('auth.login', 'ka', 'register.mentor', 'დარეგისტრირდი მენტორად'),
-('auth.login', 'ka', 'register.mentee', 'დარეგისტრირდი მოსწავლედ'),
-('auth.login', 'ka', 'register.or', 'ან')
-ON CONFLICT (namespace, locale, key) DO UPDATE SET
+-- Georgian translations (broken into two lines for better UI)
+INSERT INTO public.translations (namespace, translation_key, locale, value, auto_generated) VALUES
+('auth.login', 'register.mentor', 'ka', 'დარეგისტრირდი<br/>მენტორად', false),
+('auth.login', 'register.mentee', 'ka', 'დარეგისტრირდი<br/>მოსწავლედ', false),
+('auth.login', 'register.or', 'ka', 'ან', false)
+ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
   value = EXCLUDED.value,
   updated_at = CURRENT_TIMESTAMP;
 
 -- Add missing Georgian login form translations if they don't exist
-INSERT INTO translations (namespace, locale, key, value) VALUES
-('auth.login', 'ka', 'title', 'მოგესალმეთ კვლავ'),
-('auth.login', 'ka', 'subtitle', 'შედით თქვენს მენტორინგის პლატფორმის ანგარიშზე'),
-('auth.login', 'ka', 'labels.email', 'ელფოსტა'),
-('auth.login', 'ka', 'placeholders.email', 'შეიყვანეთ თქვენი ელფოსტა'),
-('auth.login', 'ka', 'labels.password', 'პაროლი'),
-('auth.login', 'ka', 'placeholders.password', 'შეიყვანეთ თქვენი პაროლი'),
-('auth.login', 'ka', 'forgotPassword', 'დაგავიწყდათ პაროლი?'),
-('auth.login', 'ka', 'cta.loading', 'შესვლა...'),
-('auth.login', 'ka', 'cta.submit', 'შესვლა'),
-('auth.login', 'ka', 'footer.prompt', 'არ გაქვს ანგარიში?'),
-('auth.login', 'ka', 'footer.link', 'რეგისტრაცია')
-ON CONFLICT (namespace, locale, key) DO UPDATE SET
+INSERT INTO public.translations (namespace, translation_key, locale, value, auto_generated) VALUES
+('auth.login', 'title', 'ka', 'მოგესალმეთ კვლავ', false),
+('auth.login', 'subtitle', 'ka', 'შედით თქვენს მენტორინგის პლატფორმის ანგარიშზე', false),
+('auth.login', 'labels.email', 'ka', 'ელფოსტა', false),
+('auth.login', 'placeholders.email', 'ka', 'შეიყვანეთ თქვენი ელფოსტა', false),
+('auth.login', 'labels.password', 'ka', 'პაროლი', false),
+('auth.login', 'placeholders.password', 'ka', 'შეიყვანეთ თქვენი პაროლი', false),
+('auth.login', 'forgotPassword', 'ka', 'დაგავიწყდათ პაროლი?', false),
+('auth.login', 'cta.loading', 'ka', 'შესვლა...', false),
+('auth.login', 'cta.submit', 'ka', 'შესვლა', false),
+('auth.login', 'footer.prompt', 'ka', 'არ გაქვს ანგარიში?', false),
+('auth.login', 'footer.link', 'ka', 'რეგისტრაცია', false)
+ON CONFLICT (namespace, translation_key, locale) DO UPDATE SET
   value = EXCLUDED.value,
   updated_at = CURRENT_TIMESTAMP;

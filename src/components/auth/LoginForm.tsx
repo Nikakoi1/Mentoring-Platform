@@ -169,12 +169,10 @@ export function LoginForm() {
         </p>
         {showBothOptions() ? (
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
-            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors">
-              {t('register.mentor')}
+            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors" dangerouslySetInnerHTML={{ __html: t('register.mentor') }}>
             </a>
             <span className="text-gray-400 px-2">{t('register.or')}</span>
-            <a href="/register/mentee" className="text-green-600 hover:underline font-medium px-2 py-1 rounded hover:bg-green-50 transition-colors">
-              {t('register.mentee')}
+            <a href="/register/mentee" className="text-green-600 hover:underline font-medium px-2 py-1 rounded hover:bg-green-50 transition-colors" dangerouslySetInnerHTML={{ __html: t('register.mentee') }}>
             </a>
           </div>
         ) : (
