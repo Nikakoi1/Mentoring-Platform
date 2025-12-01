@@ -18,7 +18,7 @@ export default function MentorPage() {
         router.push('/dashboard')
       } else {
         // Correct role - redirect to mentor dashboard
-        router.replace('/mentor/mentees')
+        router.replace('/dashboard')
       }
     }
   }, [router, userProfile, loading])
