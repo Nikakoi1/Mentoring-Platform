@@ -58,7 +58,6 @@ export function MentorDashboard() {
   const [evaluationsLoading, setEvaluationsLoading] = useState(false)
   const [pairings, setPairings] = useState<PairingWithUsers[]>([])
   const [goalMap, setGoalMap] = useState<Record<string, Goal>>({})
-  const [menteeDetails, setMenteeDetails] = useState<Record<string, User>>({})
   const loadResourcesForPairing = useSessionResources(user?.id, resourceCache, setResourceCache, setResourcesLoading)
   const [statusFilter, setStatusFilter] = useState<'all' | SessionStatus>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -215,7 +214,7 @@ export function MentorDashboard() {
     })
 
     return sorted
-  }, [sessions, statusFilter, searchTerm, sortField, sortDirection])
+  }, [sessions, statusFilter, searchTerm, sortField, sortDirection, goalMap, menteeLookup])
 
   useEffect(() => {
     const loadDashboardData = async () => {

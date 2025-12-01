@@ -34,7 +34,7 @@ export function SupabaseTest() {
         if (error) {
           console.error('[SupabaseTest] Health check failed, trying translations...', error)
           // Try translations as fallback
-          const { data: transData, error: transError } = await supabase.from('translations').select('count').limit(1)
+          const { error: transError } = await supabase.from('translations').select('count').limit(1)
           if (transError) {
             console.error('[SupabaseTest] Both queries failed:', transError)
             setError(`Health check: ${error.message}, Translations: ${transError.message}`)

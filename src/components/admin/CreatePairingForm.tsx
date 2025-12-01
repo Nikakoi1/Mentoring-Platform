@@ -57,7 +57,7 @@ export function CreatePairingForm() {
       setLoading(false)
     }
     fetchUsers()
-  }, [userProfile])
+  }, [userProfile, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

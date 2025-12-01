@@ -78,7 +78,7 @@ export function useTranslations({ namespace, defaults = {} }: UseTranslationsOpt
 
   useEffect(() => {
     loadTranslations()
-  }, [locale, namespace])
+  }, [locale, namespace, loadTranslations])
 
   const translations = cache[activeLocale] ?? stableDefaults
 

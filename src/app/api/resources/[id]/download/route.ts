@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import type { Database } from '@/lib/types/database'
 
 const RESOURCES_BUCKET = process.env.SUPABASE_RESOURCES_BUCKET ?? 'resources'
 const SIGNED_URL_EXPIRY_SECONDS = Number(process.env.SUPABASE_SIGNED_URL_EXPIRY_SECONDS ?? '3600')
 
-type PairingSummary = { mentor_id: string; mentee_id: string }
+type PairingSummary = { mentor_id: string | null; mentee_id: string | null }
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
   const {
     data: { user },
@@ -28,14 +29,15 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     .select(
       `id, file_path, file_name, uploaded_by, pairing:pairing_id(mentor_id, mentee_id)`
     )
-    .eq('id', params.id)
+    .eq('id', id)
     .maybeSingle()
 
   if (resourceError) {
     return NextResponse.json({ error: resourceError.message }, { status: 500 })
   }
 
-  const pairing = resource?.pairing as PairingSummary | null
+  const relation = resource?.pairing as PairingSummary | PairingSummary[] | null | undefined
+  const pairing = Array.isArray(relation) ? relation[0] : relation
 
   if (!resource?.file_path || !pairing) {
     return NextResponse.json({ error: 'Resource not found' }, { status: 404 })

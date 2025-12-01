@@ -21,10 +21,10 @@ interface MentorAnalytics {
   total_sessions: number
   completed_sessions: number
   planned_sessions: number
-  average_evaluation: number
+  average_evaluation: number | null
   total_goals: number
   achieved_goals: number
-  mentees_details: MenteeDetail[]
+  mentees_details?: MenteeDetail[]
 }
 
 interface MenteeDetail {
@@ -35,9 +35,15 @@ interface MenteeDetail {
   total_sessions: number
   completed_sessions: number
   planned_sessions: number
-  average_evaluation: number
+  average_evaluation: number | null
   total_goals: number
   achieved_goals: number
+}
+
+interface SessionDetailResource {
+  id?: string
+  title?: string
+  resource_type?: string
 }
 
 interface SessionDetail {
@@ -45,22 +51,15 @@ interface SessionDetail {
   title: string
   scheduled_time: string
   status: string
-  evaluation_rating: number
-  evaluation_comment: string
-  goals_worked_on: string
-  resources_shared: any[]
+  evaluation_rating: number | null
+  evaluation_comment: string | null
+  goals_worked_on: string | null
+  resources_shared: SessionDetailResource[]
 }
 
 interface MentorOption {
   id: string
   full_name: string
-  email: string
-}
-
-// Type for the database function return
-interface MentorOptionFromDB {
-  id: string
-  full_name?: string
   email: string
 }
 
@@ -118,6 +117,7 @@ export function ReportingDashboard() {
   const [expandedMentors, setExpandedMentors] = useState<Set<string>>(new Set())
   const [expandedMentees, setExpandedMentees] = useState<Set<string>>(new Set())
   const [menteeSessions, setMenteeSessions] = useState<Record<string, SessionDetail[]>>({})
+  const isCoordinator = userProfile?.role === 'coordinator'
   
   const initialStartDate = useMemo(() => {
     const now = new Date()
@@ -168,7 +168,7 @@ export function ReportingDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (userProfile?.role !== 'coordinator') {
+      if (!isCoordinator) {
         setError(t('error.permission'))
         setLoading(false)
         return
@@ -196,7 +196,11 @@ export function ReportingDashboard() {
         console.log('Mentors loaded:', transformedMentors.length)
 
         // Fetch analytics data
-        console.log('Fetching analytics with params:', { startDate, endDate, selectedMentors })
+        console.log('Fetching analytics with params:', {
+          startDate: appliedFilters.startDate,
+          endDate: appliedFilters.endDate,
+          mentors: appliedFilters.mentors
+        })
         const { data: analyticsData, error: analyticsError } = await getDetailedMentorAnalytics(
           appliedFilters.startDate,
           appliedFilters.endDate,
@@ -208,7 +212,11 @@ export function ReportingDashboard() {
         }
         
         console.log('Analytics loaded:', analyticsData?.length || 0, 'mentors')
-        setAnalytics(analyticsData || [])
+        const normalizedAnalytics: MentorAnalytics[] = (analyticsData ?? []).map((item) => ({
+          ...item,
+          mentees_details: item.mentees_details ?? []
+        }))
+        setAnalytics(normalizedAnalytics)
         
       } catch (err) {
         console.error('Dashboard fetch error:', err)
@@ -220,7 +228,7 @@ export function ReportingDashboard() {
     }
 
     fetchData()
-  }, [userProfile, appliedFilters, t])
+  }, [isCoordinator, appliedFilters, t])
 
   const toggleMentor = (mentorId: string) => {
     const newExpanded = new Set(expandedMentors)
@@ -247,24 +255,16 @@ export function ReportingDashboard() {
           const { data: sessionsData } = await getMenteeSessionDetails(menteeId, startDate, endDate)
           setMenteeSessions(prev => ({
             ...prev,
-            [menteeId]: sessionsData || []
+            [menteeId]: (sessionsData ?? []).map((session) => ({
+              ...session,
+              resources_shared: session.resources_shared ?? []
+            }))
           }))
         } catch (err) {
           console.error('Failed to fetch session details:', err)
         }
       }
     }
-  }
-
-  const clearFilters = () => {
-    setStartDate(initialStartDate)
-    setEndDate(initialEndDate)
-    setSelectedMentors([])
-    setAppliedFilters({
-      startDate: initialStartDate,
-      endDate: initialEndDate,
-      mentors: []
-    })
   }
 
   const applyFilters = () => {

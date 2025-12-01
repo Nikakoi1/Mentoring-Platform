@@ -36,7 +36,7 @@ export function LanguageProvider({ children, initialLocale = 'en' }: LanguagePro
       setLocaleState(savedLocale)
     }
     setHydrated(true)
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
