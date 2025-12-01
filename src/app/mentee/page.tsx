@@ -17,8 +17,8 @@ export default function MenteePage() {
         // Wrong role - redirect to dashboard
         router.push('/dashboard')
       } else {
-        // Correct role - redirect to mentee dashboard
-        router.replace('/mentee/clients')
+        // Correct role - redirect to general dashboard (shows mentee UI)
+        router.replace('/dashboard')
       }
     }
   }, [router, userProfile, loading])

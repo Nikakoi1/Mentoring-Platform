@@ -17,8 +17,8 @@ export default function MentorPage() {
         // Wrong role - redirect to dashboard
         router.push('/dashboard')
       } else {
-        // Correct role - redirect to mentor dashboard
-        router.replace('/mentor/mentees')
+        // Correct role - redirect to general dashboard (shows mentor UI)
+        router.replace('/dashboard')
       }
     }
   }, [router, userProfile, loading])
