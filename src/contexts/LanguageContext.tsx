@@ -27,17 +27,6 @@ export function LanguageProvider({ children, initialLocale = 'en' }: LanguagePro
   const [locale, setLocaleState] = useState<SupportedLocale>(initialLocale)
   const [hydrated, setHydrated] = useState(false)
 
-  useEffect(() => {
-    const savedLocale = typeof window !== 'undefined'
-      ? (window.localStorage.getItem(STORAGE_KEY) as SupportedLocale | null)
-      : null
-
-    if (savedLocale) {
-      setLocaleState((current) => current === savedLocale ? current : savedLocale)
-    }
-    setHydrated(true)
-  }, [])
-
   const persistLocale = useCallback((nextLocale: SupportedLocale) => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = nextLocale
@@ -46,6 +35,18 @@ export function LanguageProvider({ children, initialLocale = 'en' }: LanguagePro
       window.localStorage.setItem(STORAGE_KEY, nextLocale)
     }
   }, [])
+
+  useEffect(() => {
+    const savedLocale = typeof window !== 'undefined'
+      ? (window.localStorage.getItem(STORAGE_KEY) as SupportedLocale | null)
+      : null
+
+    if (savedLocale) {
+      setLocaleState((current) => current === savedLocale ? current : savedLocale)
+      persistLocale(savedLocale)
+    }
+    setHydrated(true)
+  }, [persistLocale])
 
   useEffect(() => {
     persistLocale(locale)
