@@ -34,8 +34,6 @@ export function LoginForm() {
   // Determine registration redirect based on referrer
   const getRegistrationRedirect = () => {
     const from = searchParams.get('from')
-    console.log('Login form - from parameter:', from)
-    console.log('Login form - searchParams:', searchParams.toString())
     
     if (from === 'mentor') return '/register/mentor'
     if (from === 'mentee') return '/register/mentee'
@@ -101,6 +99,7 @@ export function LoginForm() {
               placeholder={t('placeholders.email')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
           </div>
@@ -120,6 +119,7 @@ export function LoginForm() {
               placeholder={t('placeholders.password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
             />
           </div>
