@@ -10,6 +10,7 @@ CREATE TABLE public.users (
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
   role TEXT CHECK(role IN ('coordinator','mentor','mentee')) NOT NULL,
+  region TEXT,
   profile JSONB DEFAULT '{}',
   avatar_url TEXT,
   phone TEXT,
@@ -18,6 +19,31 @@ CREATE TABLE public.users (
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5b. Client visits table (mentee-to-client scheduling)
+CREATE TABLE public.client_visits (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  mentee_id UUID REFERENCES public.mentees(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  scheduled_at TIMESTAMPTZ NOT NULL,
+  duration_minutes INTEGER DEFAULT 60,
+  status TEXT CHECK(status IN ('scheduled','completed','cancelled')) DEFAULT 'scheduled',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5c. Client visit evaluations table
+CREATE TABLE public.client_visit_evaluations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  visit_id UUID REFERENCES public.client_visits(id) ON DELETE CASCADE,
+  mentee_id UUID REFERENCES public.mentees(id) ON DELETE CASCADE,
+  rating INTEGER CHECK(rating >= 0 AND rating <= 10) NOT NULL,
+  comment TEXT,
+  resource_ids UUID[],
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 2. Mentors table
@@ -51,6 +77,18 @@ CREATE TABLE public.mentees (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 3b. Clients table (managed by mentees)
+CREATE TABLE public.clients (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  mentee_id UUID REFERENCES public.mentees(id) ON DELETE CASCADE,
+  display_name TEXT NOT NULL,
+  address TEXT,
+  services_provided TEXT,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 4. Pairings table (mentor-mentee relationships)
 CREATE TABLE public.pairings (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -73,6 +111,7 @@ CREATE TABLE public.sessions (
   pairing_id UUID REFERENCES public.pairings(id) ON DELETE CASCADE,
   mentor_id UUID REFERENCES public.mentors(id),
   mentee_id UUID REFERENCES public.mentees(id),
+  goal_id UUID REFERENCES public.goals(id),
   title TEXT NOT NULL,
   description TEXT,
   scheduled_at TIMESTAMPTZ NOT NULL,
@@ -137,6 +176,7 @@ CREATE TABLE public.resources (
   title TEXT NOT NULL,
   description TEXT,
   resource_type TEXT CHECK(resource_type IN ('document','video','link','image','presentation','code')) NOT NULL,
+  file_path TEXT,
   file_url TEXT,
   file_name TEXT,
   file_size INTEGER,
@@ -195,15 +235,50 @@ CREATE TABLE public.messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 12. System settings table (single-row global configuration)
+CREATE TABLE public.system_settings (
+  id TEXT PRIMARY KEY DEFAULT 'global',
+  enable_email_notifications BOOLEAN DEFAULT true,
+  allow_public_registration BOOLEAN DEFAULT true,
+  default_user_role TEXT CHECK(default_user_role IN ('coordinator','mentor','mentee')) DEFAULT 'mentee',
+  default_language TEXT CHECK(default_language IN ('en','ka')) DEFAULT 'en',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO public.system_settings (id)
+VALUES ('global')
+ON CONFLICT (id) DO NOTHING;
+
+-- 13. Translations table (stores localized strings)
+CREATE TABLE public.translations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  namespace TEXT NOT NULL,
+  translation_key TEXT NOT NULL,
+  locale TEXT CHECK(locale IN ('en','ka')) NOT NULL,
+  value TEXT NOT NULL,
+  auto_generated BOOLEAN DEFAULT true,
+  updated_by UUID REFERENCES public.users(id),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(namespace, translation_key, locale)
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_users_role ON public.users(role);
 CREATE INDEX idx_users_active ON public.users(active);
 CREATE INDEX idx_pairings_mentor ON public.pairings(mentor_id);
 CREATE INDEX idx_pairings_mentee ON public.pairings(mentee_id);
 CREATE INDEX idx_pairings_status ON public.pairings(status);
+CREATE INDEX idx_clients_mentee ON public.clients(mentee_id);
+CREATE INDEX idx_clients_active ON public.clients(active);
 CREATE INDEX idx_sessions_pairing ON public.sessions(pairing_id);
 CREATE INDEX idx_sessions_scheduled_at ON public.sessions(scheduled_at);
 CREATE INDEX idx_sessions_status ON public.sessions(status);
+CREATE INDEX idx_client_visits_mentee ON public.client_visits(mentee_id);
+CREATE INDEX idx_client_visits_client ON public.client_visits(client_id);
+CREATE INDEX idx_client_visits_status ON public.client_visits(status);
+CREATE INDEX idx_client_visit_evals_visit ON public.client_visit_evaluations(visit_id);
+CREATE INDEX idx_client_visit_evals_mentee ON public.client_visit_evaluations(mentee_id);
 CREATE INDEX idx_goals_pairing ON public.goals(pairing_id);
 CREATE INDEX idx_goals_status ON public.goals(status);
 CREATE INDEX idx_resources_pairing ON public.resources(pairing_id);
@@ -212,6 +287,7 @@ CREATE INDEX idx_notifications_user ON public.notifications(user_id);
 CREATE INDEX idx_notifications_read ON public.notifications(read_at);
 CREATE INDEX idx_messages_pairing ON public.messages(pairing_id);
 CREATE INDEX idx_messages_sender ON public.messages(sender_id);
+CREATE INDEX idx_translations_namespace_locale ON public.translations(namespace, locale);
 
 -- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -225,3 +301,5 @@ ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.progress_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.translations ENABLE ROW LEVEL SECURITY;

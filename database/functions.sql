@@ -15,12 +15,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, full_name, role)
+  INSERT INTO public.users (id, email, full_name, role, region)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'mentee')
+    COALESCE(NEW.raw_user_meta_data->>'role', 'mentee'),
+    NULLIF(NEW.raw_user_meta_data->>'region', '')
   );
   
   -- Create role-specific profile
@@ -31,6 +32,162 @@ BEGIN
   END IF;
   
   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get detailed mentor analytics for reports
+CREATE OR REPLACE FUNCTION public.get_detailed_mentor_analytics(
+  start_date DATE DEFAULT NULL,
+  end_date DATE DEFAULT NULL,
+  mentor_ids UUID[] DEFAULT NULL
+)
+RETURNS TABLE (
+  mentor_id UUID,
+  mentor_name TEXT,
+  mentor_email TEXT,
+  total_mentees INTEGER,
+  active_mentees INTEGER,
+  total_sessions INTEGER,
+  completed_sessions INTEGER,
+  planned_sessions INTEGER,
+  average_evaluation DECIMAL(3,2),
+  total_goals INTEGER,
+  achieved_goals INTEGER,
+  mentees_details JSONB
+) AS $$
+DECLARE
+  v_start_date DATE := COALESCE(start_date, DATE_TRUNC('month', CURRENT_DATE));
+  v_end_date DATE := COALESCE(end_date, CURRENT_DATE);
+BEGIN
+  RETURN QUERY
+  WITH mentor_stats AS (
+    SELECT 
+      m.id as mentor_id,
+      u.full_name as mentor_name,
+      u.email as mentor_email,
+      COUNT(DISTINCT p.mentee_id)::INT as total_mentees,
+      COUNT(DISTINCT CASE WHEN p.status = 'active' THEN p.mentee_id END)::INT as active_mentees,
+      COUNT(DISTINCT s.id)::INT as total_sessions,
+      COUNT(DISTINCT CASE WHEN s.status = 'completed' THEN s.id END)::INT as completed_sessions,
+      COUNT(DISTINCT CASE WHEN s.status = 'scheduled' OR s.status = 'confirmed' THEN s.id END)::INT as planned_sessions,
+      ROUND(AVG(CASE WHEN s.rating IS NOT NULL THEN s.rating END), 2) as average_evaluation,
+      COUNT(DISTINCT g.id)::INT as total_goals,
+      COUNT(DISTINCT CASE WHEN g.status = 'completed' THEN g.id END)::INT as achieved_goals
+    FROM mentors m
+    JOIN users u ON m.id = u.id
+    LEFT JOIN pairings p ON m.id = p.mentor_id
+    LEFT JOIN sessions s ON p.id = s.pairing_id AND s.scheduled_at BETWEEN v_start_date AND v_end_date
+    LEFT JOIN goals g ON p.mentee_id = g.mentee_id AND g.created_at BETWEEN v_start_date AND v_end_date
+    WHERE (mentor_ids IS NULL OR m.id = ANY(mentor_ids))
+    GROUP BY m.id, u.full_name, u.email
+  ),
+  mentee_stats AS (
+    SELECT 
+      p.mentor_id,
+      p.mentee_id,
+      u.full_name AS mentee_name,
+      u.email AS mentee_email,
+      p.status,
+      COUNT(DISTINCT s.id)::INT AS total_sessions,
+      COUNT(DISTINCT CASE WHEN s.status = 'completed' THEN s.id END)::INT AS completed_sessions,
+      COUNT(DISTINCT CASE WHEN s.status = 'scheduled' OR s.status = 'confirmed' THEN s.id END)::INT AS planned_sessions,
+      ROUND(AVG(CASE WHEN s.rating IS NOT NULL THEN s.rating END), 2) AS average_evaluation,
+      COUNT(DISTINCT g.id)::INT AS total_goals,
+      COUNT(DISTINCT CASE WHEN g.status = 'completed' THEN g.id END)::INT AS achieved_goals
+    FROM pairings p
+    JOIN users u ON p.mentee_id = u.id
+    LEFT JOIN sessions s ON p.id = s.pairing_id AND s.scheduled_at BETWEEN v_start_date AND v_end_date
+    LEFT JOIN goals g ON p.mentee_id = g.mentee_id AND g.created_at BETWEEN v_start_date AND v_end_date
+    WHERE mentor_ids IS NULL OR p.mentor_id = ANY(mentor_ids)
+    GROUP BY p.mentor_id, p.mentee_id, mentee_name, mentee_email, p.status
+  ),
+  mentee_details AS (
+    SELECT 
+      mentee_stats.mentor_id,
+      jsonb_agg(
+        jsonb_build_object(
+          'mentee_id', mentee_stats.mentee_id,
+          'mentee_name', mentee_stats.mentee_name,
+          'mentee_email', mentee_stats.mentee_email,
+          'status', mentee_stats.status,
+          'total_sessions', mentee_stats.total_sessions,
+          'completed_sessions', mentee_stats.completed_sessions,
+          'planned_sessions', mentee_stats.planned_sessions,
+          'average_evaluation', mentee_stats.average_evaluation,
+          'total_goals', mentee_stats.total_goals,
+          'achieved_goals', mentee_stats.achieved_goals
+        )
+        ORDER BY mentee_name
+      ) as mentees_data
+    FROM mentee_stats
+    GROUP BY mentee_stats.mentor_id
+  )
+  SELECT 
+    ms.mentor_id,
+    ms.mentor_name,
+    ms.mentor_email,
+    ms.total_mentees,
+    ms.active_mentees,
+    ms.total_sessions,
+    ms.completed_sessions,
+    ms.planned_sessions,
+    ms.average_evaluation,
+    ms.total_goals,
+    ms.achieved_goals,
+    COALESCE(md.mentees_data, '[]'::jsonb) as mentees_details
+  FROM mentor_stats ms
+  LEFT JOIN mentee_details md ON ms.mentor_id = md.mentor_id
+  ORDER BY ms.mentor_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get mentee session details
+CREATE OR REPLACE FUNCTION public.get_mentee_session_details(
+  mentee_id UUID,
+  start_date DATE DEFAULT NULL,
+  end_date DATE DEFAULT NULL
+)
+RETURNS TABLE (
+  session_id UUID,
+  title TEXT,
+  scheduled_time TIMESTAMP,
+  status TEXT,
+  evaluation_rating INTEGER,
+  evaluation_comment TEXT,
+  goals_worked_on TEXT,
+  resources_shared JSONB
+) AS $$
+DECLARE
+  v_start_date DATE := COALESCE(start_date, DATE_TRUNC('month', CURRENT_DATE));
+  v_end_date DATE := COALESCE(end_date, CURRENT_DATE);
+BEGIN
+  RETURN QUERY
+  SELECT 
+    s.id as session_id,
+    s.title,
+    s.scheduled_at as scheduled_time,
+    s.status,
+    s.rating as evaluation_rating,
+    s.mentor_feedback as evaluation_comment,
+    COALESCE(string_agg(DISTINCT g.title, ', '), '') as goals_worked_on,
+    COALESCE(
+      jsonb_agg(
+        DISTINCT jsonb_build_object(
+          'resource_id', sr.resource_id,
+          'resource_name', r.name,
+          'resource_type', r.type
+        )
+      ) FILTER (WHERE sr.resource_id IS NOT NULL), 
+      '[]'::jsonb
+    ) as resources_shared
+  FROM sessions s
+  LEFT JOIN goals g ON s.goal_id = g.id
+  LEFT JOIN session_resources sr ON s.id = sr.session_id
+  LEFT JOIN resources r ON sr.resource_id = r.id
+  WHERE s.mentee_id = mentee_id
+    AND s.scheduled_at BETWEEN v_start_date AND v_end_date
+  GROUP BY s.id, s.rating, s.mentor_feedback
+  ORDER BY s.scheduled_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

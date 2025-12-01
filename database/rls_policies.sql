@@ -7,6 +7,7 @@
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.users;
 DROP POLICY IF EXISTS "Users can update their own profile" ON public.users;
 DROP POLICY IF EXISTS "Coordinators can view all users" ON public.users;
+DROP POLICY IF EXISTS "Coordinators can manage all users" ON public.users;
 
 -- Mentors table
 DROP POLICY IF EXISTS "Mentors can view their own profile" ON public.mentors;
@@ -17,6 +18,12 @@ DROP POLICY IF EXISTS "Coordinators can manage mentors" ON public.mentors;
 DROP POLICY IF EXISTS "Mentees can view their own profile" ON public.mentees;
 DROP POLICY IF EXISTS "Mentors can view their mentees" ON public.mentees;
 DROP POLICY IF EXISTS "Coordinators can manage mentees" ON public.mentees;
+
+-- Clients table
+DROP POLICY IF EXISTS "Mentees can manage their clients" ON public.clients;
+
+-- Client visits table
+DROP POLICY IF EXISTS "Mentees can manage their client visits" ON public.client_visits;
 
 -- Pairings table
 DROP POLICY IF EXISTS "Users can view their own pairings" ON public.pairings;
@@ -60,6 +67,14 @@ DROP POLICY IF EXISTS "Users can view their messages" ON public.messages;
 DROP POLICY IF EXISTS "Users can send messages in their pairings" ON public.messages;
 DROP POLICY IF EXISTS "Users can update their sent messages" ON public.messages;
 
+-- System settings policies
+DROP POLICY IF EXISTS "Authenticated users can view system settings" ON public.system_settings;
+DROP POLICY IF EXISTS "Coordinators can manage system settings" ON public.system_settings;
+
+-- Translations policies
+DROP POLICY IF EXISTS "Authenticated users can view translations" ON public.translations;
+DROP POLICY IF EXISTS "Coordinators can manage translations" ON public.translations;
+
 -- Recreate policies
 
 -- Users table policies
@@ -71,6 +86,11 @@ CREATE POLICY "Users can update their own profile" ON public.users
 
 CREATE POLICY "Coordinators can view all users" ON public.users
   FOR SELECT USING (
+    public.get_my_role() = 'coordinator'
+  );
+
+CREATE POLICY "Coordinators can manage all users" ON public.users
+  FOR UPDATE USING (
     public.get_my_role() = 'coordinator'
   );
 
@@ -104,6 +124,18 @@ CREATE POLICY "Mentors can view their mentees" ON public.mentees
 CREATE POLICY "Coordinators can manage mentees" ON public.mentees
   FOR ALL USING (
     public.get_my_role() = 'coordinator'
+  );
+
+-- Clients table policies
+CREATE POLICY "Mentees can manage their clients" ON public.clients
+  FOR ALL USING (
+    mentee_id = auth.uid()
+  );
+
+-- Client visits table policies
+CREATE POLICY "Mentees can manage their client visits" ON public.client_visits
+  FOR ALL USING (
+    mentee_id = auth.uid()
   );
 
 -- Pairings table policies
@@ -257,3 +289,25 @@ CREATE POLICY "Users can send messages in their pairings" ON public.messages
 
 CREATE POLICY "Users can update their sent messages" ON public.messages
   FOR UPDATE USING (sender_id = auth.uid());
+
+-- System settings policies
+CREATE POLICY "Authenticated users can view system settings" ON public.system_settings
+  FOR SELECT USING (
+    auth.role() = 'authenticated' OR auth.role() = 'service_role'
+  );
+
+CREATE POLICY "Coordinators can manage system settings" ON public.system_settings
+  FOR ALL USING (
+    public.get_my_role() = 'coordinator' OR auth.role() = 'service_role'
+  );
+
+-- Translations policies
+CREATE POLICY "Authenticated users can view translations" ON public.translations
+  FOR SELECT USING (
+    auth.role() = 'authenticated' OR auth.role() = 'service_role'
+  );
+
+CREATE POLICY "Coordinators can manage translations" ON public.translations
+  FOR ALL USING (
+    public.get_my_role() = 'coordinator' OR auth.role() = 'service_role'
+  );
