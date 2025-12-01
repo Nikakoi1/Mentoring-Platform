@@ -164,16 +164,16 @@ export function LoginForm() {
       </form>
       
       <div className="text-center">
-        <p className="text-sm text-gray-600 mb-2">
+        <p className="text-sm text-gray-600 mb-3">
           {t('footer.prompt')}
         </p>
         {showBothOptions() ? (
-          <div className="space-x-4">
-            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
+            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors">
               {t('register.mentor')}
             </a>
-            <span className="text-gray-400">{t('register.or')}</span>
-            <a href="/register/mentee" className="text-green-600 hover:underline font-medium">
+            <span className="text-gray-400 px-2">{t('register.or')}</span>
+            <a href="/register/mentee" className="text-green-600 hover:underline font-medium px-2 py-1 rounded hover:bg-green-50 transition-colors">
               {t('register.mentee')}
             </a>
           </div>
