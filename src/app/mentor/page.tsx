@@ -11,10 +11,13 @@ export default function MentorPage() {
   useEffect(() => {
     if (!loading) {
       if (!userProfile) {
-        router.push('/login')
+        // Not authenticated - redirect to mentor registration
+        router.replace('/register/mentor')
       } else if (userProfile.role !== 'mentor') {
+        // Wrong role - redirect to dashboard
         router.push('/dashboard')
       } else {
+        // Correct role - redirect to mentor dashboard
         router.replace('/mentor/mentees')
       }
     }
