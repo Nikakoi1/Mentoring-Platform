@@ -27,7 +27,24 @@ export function LoginForm() {
       'cta.loading': 'Signing in...',
       'cta.submit': 'Sign in',
       'footer.prompt': "Don't have an account?",
-      'footer.link': 'Sign up'
+      'footer.link': 'Sign up',
+      // Georgian translations
+      'ka.title': 'მოგესალმეთ კვლავ',
+      'ka.subtitle': 'შედით თქვენს მენტორინგის პლატფორმის ანგარიშზე',
+      'ka.labels.email': 'ელფოსტა',
+      'ka.placeholders.email': 'შეიყვანეთ თქვენი ელფოსტა',
+      'ka.labels.password': 'პაროლი',
+      'ka.placeholders.password': 'შეიყვანეთ თქვენი პაროლი',
+      'ka.forgotPassword': 'დაგავიწყდათ პაროლი?',
+      'ka.cta.loading': 'შესვლა...',
+      'ka.cta.submit': 'შესვლა',
+      'ka.footer.prompt': 'არ გაქვს ანგარიში?',
+      'ka.footer.link': 'რეგისტრაცია',
+      'ka.register.mentor': 'დარეგისტრირდი მენტორად',
+      'ka.register.mentee': 'დარეგისტრირდი მოსწავლედ',
+      'register.mentor': 'Register as Mentor',
+      'register.mentee': 'Register as Mentee',
+      'register.or': 'or'
     }
   })
 
@@ -153,11 +170,11 @@ export function LoginForm() {
         {showBothOptions() ? (
           <div className="space-x-4">
             <a href="/register/mentor" className="text-blue-600 hover:underline font-medium">
-              Register as Mentor
+              {t('register.mentor')}
             </a>
-            <span className="text-gray-400">or</span>
+            <span className="text-gray-400">{t('register.or')}</span>
             <a href="/register/mentee" className="text-green-600 hover:underline font-medium">
-              Register as Mentee
+              {t('register.mentee')}
             </a>
           </div>
         ) : (
