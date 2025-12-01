@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+
 import { useAuth } from '@/contexts/AuthContext'
 import { getPairingMessages, sendMessage } from '@/lib/services/database'
 import { supabase } from '@/lib/supabase/client'
 import type { Message } from '@/lib/types/database'
+import { useTranslations } from '@/hooks/useTranslations'
 
 interface MessagingInterfaceProps {
   pairingId: string;
@@ -16,8 +18,20 @@ export function MessagingInterface({ pairingId, recipientId }: MessagingInterfac
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [errorKey, setErrorKey] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslations({
+    namespace: 'messages.chat',
+    defaults: {
+      'loading': 'Loading messages...',
+      'error.load': 'Failed to load messages.',
+      'error.send': 'Failed to send message.',
+      'title': 'Conversation',
+      'input.placeholder': 'Type a message...',
+      'cta.send': 'Send'
+    }
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -26,9 +40,12 @@ export function MessagingInterface({ pairingId, recipientId }: MessagingInterfac
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true)
+      setErrorKey(null)
+      setErrorMessage('')
       const { data, error } = await getPairingMessages(pairingId)
       if (error) {
-        setError('Failed to load messages.')
+        setErrorKey('error.load')
+        setErrorMessage('')
         console.error(error)
       } else if (data) {
         setMessages(data)
@@ -77,24 +94,26 @@ export function MessagingInterface({ pairingId, recipientId }: MessagingInterfac
     const { error: sendError } = await sendMessage(messageData)
 
     if (sendError) {
-      setError('Failed to send message.')
-      // Optionally, add the message back to the input to allow user to retry
+      setErrorKey('error.send')
+      setErrorMessage('')
       setNewMessage(newMessage)
     }
   }
 
+  const resolvedError = errorKey ? t(errorKey) : errorMessage
+
   if (loading) {
-    return <div className="text-center p-8">Loading messages...</div>
+    return <div className="text-center p-8">{t('loading')}</div>
   }
 
-  if (error) {
-    return <div className="text-center p-8 text-red-600 bg-red-50 rounded-lg">{error}</div>
+  if (resolvedError) {
+    return <div className="text-center p-8 text-red-600 bg-red-50 rounded-lg">{resolvedError}</div>
   }
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg flex flex-col h-[80vh]">
       <div className="p-4 border-b">
-        <h1 className="text-xl font-bold">Conversation</h1>
+        <h1 className="text-xl font-bold">{t('title')}</h1>
       </div>
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="space-y-4">
@@ -118,7 +137,7 @@ export function MessagingInterface({ pairingId, recipientId }: MessagingInterfac
             className="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={t('input.placeholder')}
             autoComplete="off"
           />
           <button
@@ -126,7 +145,7 @@ export function MessagingInterface({ pairingId, recipientId }: MessagingInterfac
             className="px-6 py-2 text-white bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             disabled={!newMessage.trim()}
           >
-            Send
+            {t('cta.send')}
           </button>
         </form>
       </div>
