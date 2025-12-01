@@ -1,7 +1,6 @@
 // Database service functions for Mentoring Platform
 import { supabase } from '@/lib/supabase/client'
 import type {
-  Assessment,
   Client,
   ClientVisit,
   ClientVisitEvaluation,
@@ -9,11 +8,8 @@ import type {
   CreateClientVisitEvaluationForm,
   CreateClientVisitForm,
   CreateGoalForm,
-  CreateMenteeForm,
-  CreateMentorForm,
   CreateSessionEvaluationForm,
   CreateSessionForm,
-  CreateUserForm,
   DatabaseFunction,
   Goal,
   Message,
@@ -397,11 +393,52 @@ export const getPlatformAnalytics = async (): Promise<DatabaseFunction<PlatformA
 }
 
 // Enhanced analytics functions for detailed reports
+export interface MentorAnalyticsDetail {
+  mentor_id: string
+  mentor_name: string
+  mentor_email: string
+  total_mentees: number
+  active_mentees: number
+  total_sessions: number
+  completed_sessions: number
+  planned_sessions: number
+  average_evaluation: number | null
+  total_goals: number
+  achieved_goals: number
+  mentees_details?: {
+    mentee_id: string
+    mentee_name: string
+    mentee_email: string
+    status: string
+    total_sessions: number
+    completed_sessions: number
+    planned_sessions: number
+    average_evaluation: number | null
+    total_goals: number
+    achieved_goals: number
+  }[]
+}
+
+export interface SessionDetailRow {
+  session_id: string
+  title: string
+  scheduled_time: string
+  status: string
+  evaluation_rating: number | null
+  evaluation_comment: string | null
+  goals_worked_on: string | null
+  resources_shared: {
+    id?: string
+    title?: string
+    resource_type?: string
+  }[] | null
+}
+
 export const getDetailedMentorAnalytics = async (
   startDate?: string,
   endDate?: string,
   mentorIds?: string[]
-): Promise<DatabaseFunction<any[]>> => {
+): Promise<DatabaseFunction<MentorAnalyticsDetail[]>> => {
   try {
     console.log('Calling get_detailed_mentor_analytics with:', { startDate, endDate, mentorIds })
     const { data, error } = await supabase.rpc('get_detailed_mentor_analytics', {
@@ -416,7 +453,7 @@ export const getDetailedMentorAnalytics = async (
       console.log('RPC success, data length:', data?.length || 0)
     }
     
-    return { data, error }
+    return { data: (data ?? []) as MentorAnalyticsDetail[], error }
   } catch (err) {
     console.error('Exception in getDetailedMentorAnalytics:', err)
     const error = new Error(err instanceof Error ? err.message : 'Unknown error')
@@ -428,13 +465,13 @@ export const getMenteeSessionDetails = async (
   menteeId: string,
   startDate?: string,
   endDate?: string
-): Promise<DatabaseFunction<any[]>> => {
+): Promise<DatabaseFunction<SessionDetailRow[]>> => {
   const { data, error } = await supabase.rpc('get_mentee_session_details', {
     mentee_id: menteeId,
     start_date: startDate,
     end_date: endDate
   })
-  return { data, error }
+  return { data: (data ?? []) as SessionDetailRow[], error }
 }
 
 export const getAllMentors = async (): Promise<DatabaseFunction<{ id: string; full_name?: string; email: string }[]>> => {
@@ -633,9 +670,13 @@ export const getUpcomingSessions = async (userId: string): Promise<DatabaseFunct
   return { data, error }
 }
 
+type SessionInsertPayload = Partial<Session> & {
+  mentee_ids?: string[]
+}
+
 export const createSession = async (session: CreateSessionForm): Promise<DatabaseFunction<Session>> => {
   // Handle backward compatibility and multi-mentee sessions
-  let sessionPayload: any = {
+  const sessionPayload: SessionInsertPayload = {
     ...session,
     duration_minutes: session.duration_minutes || 60,
     session_type: session.session_type || 'regular',

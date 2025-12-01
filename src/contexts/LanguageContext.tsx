@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 type SupportedLocale = 'en' | 'ka'
 
@@ -32,20 +32,24 @@ export function LanguageProvider({ children, initialLocale = 'en' }: LanguagePro
       ? (window.localStorage.getItem(STORAGE_KEY) as SupportedLocale | null)
       : null
 
-    if (savedLocale && savedLocale !== locale) {
-      setLocaleState(savedLocale)
+    if (savedLocale) {
+      setLocaleState((current) => current === savedLocale ? current : savedLocale)
     }
     setHydrated(true)
   }, [])
 
-  useEffect(() => {
+  const persistLocale = useCallback((nextLocale: SupportedLocale) => {
     if (typeof document !== 'undefined') {
-      document.documentElement.lang = locale
+      document.documentElement.lang = nextLocale
     }
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, locale)
+      window.localStorage.setItem(STORAGE_KEY, nextLocale)
     }
-  }, [locale])
+  }, [])
+
+  useEffect(() => {
+    persistLocale(locale)
+  }, [locale, persistLocale])
 
   const setLocale = (nextLocale: SupportedLocale) => {
     setLocaleState(nextLocale)
