@@ -39,7 +39,13 @@ export function LoginForm() {
     
     if (from === 'mentor') return '/register/mentor'
     if (from === 'mentee') return '/register/mentee'
-    return '/register' // fallback to general registration
+    return '/register/mentor' // default to mentor registration
+  }
+
+  // Show both registration options when no context
+  const showBothOptions = () => {
+    const from = searchParams.get('from')
+    return !from || (from !== 'mentor' && from !== 'mentee')
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -143,12 +149,24 @@ export function LoginForm() {
       </form>
       
       <div className="text-center">
-        <p className="text-sm text-gray-600">
-          {t('footer.prompt')}{' '}
+        <p className="text-sm text-gray-600 mb-2">
+          {t('footer.prompt')}
+        </p>
+        {showBothOptions() ? (
+          <div className="space-x-4">
+            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium">
+              Register as Mentor
+            </a>
+            <span className="text-gray-400">or</span>
+            <a href="/register/mentee" className="text-green-600 hover:underline font-medium">
+              Register as Mentee
+            </a>
+          </div>
+        ) : (
           <a href={getRegistrationRedirect()} className="text-blue-600 hover:underline">
             {t('footer.link')}
           </a>
-        </p>
+        )}
       </div>
     </div>
   )
