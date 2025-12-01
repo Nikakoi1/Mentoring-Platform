@@ -39,7 +39,8 @@ export function MenteeRegisterForm() {
       'ka.cta.submit': 'შექმენით მოსწავლის ანგარიში',
       'ka.footer.prompt': 'უკვე გაქვს ანგარიში?',
       'ka.footer.link': 'შესვლა',
-      'ka.success': 'რეგისტრაცია წარმატებულია! გთხოვთ, შეამოწმოთ თქვენი ელ.ფოსტა ანგარიშის დასადასტურებლად.'
+      'ka.success': 'რეგისტრაცია წარმატებულია! გთხოვთ, შეამოწმოთ თქვენი ელ.ფოსტა ანგარიშის დასადასტურებლად.',
+      'ka.errors.emailExists': 'ეს ელ.ფოსტა უკვე რეგისტრირებულია. გთხოვთ, შეხვიდეთ სისტემაში.'
     }
   })
 
@@ -67,9 +68,21 @@ export function MenteeRegisterForm() {
       router.push('/login')
     } catch (error: unknown) {
        if (error instanceof Error) {
-        setError(error.message);
+        // Handle common Supabase errors with user-friendly messages
+        if (error.message.includes('User already registered')) {
+          setError(t('errors.emailExists'))
+        } else if (error.message.includes('duplicate key')) {
+          setError(t('errors.emailExists'))
+        } else {
+          setError(error.message)
+        }
       } else if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
-        setError(error.message);
+        const msg = error.message
+        if (msg.includes('User already registered') || msg.includes('duplicate key')) {
+          setError(t('errors.emailExists'))
+        } else {
+          setError(msg)
+        }
       } else {
         setError('An unknown error occurred');
       }

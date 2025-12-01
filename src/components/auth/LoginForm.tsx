@@ -53,20 +53,8 @@ export function LoginForm() {
           return
         }
 
-        // Role-based routing
-        switch (profile.role) {
-          case 'mentor':
-            router.push('/mentor')
-            break
-          case 'mentee':
-            router.push('/mentee')
-            break
-          case 'coordinator':
-            router.push('/admin')
-            break
-          default:
-            router.push('/dashboard')
-        }
+        // Always redirect to /dashboard which will render role-specific UI
+        router.push('/dashboard')
       }
     } catch (error: unknown) {
       if (error instanceof Error) {

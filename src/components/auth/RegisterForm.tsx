@@ -33,7 +33,9 @@ export function RegisterForm() {
       'cta.submit': 'Create Account',
       'footer.prompt': 'Already have an account?',
       'footer.link': 'Sign in',
-      'success': 'Registration successful! Please check your email to verify your account.'
+      'success': 'Registration successful! Please check your email to verify your account.',
+      // Georgian defaults
+      'ka.errors.emailExists': 'ეს ელ.ფოსტა უკვე რეგისტრირებულია. გთხოვთ, შეხვიდეთ სისტემაში.'
     }
   })
 
@@ -64,9 +66,21 @@ export function RegisterForm() {
       router.push('/login')
     } catch (error: unknown) {
        if (error instanceof Error) {
-        setError(error.message);
+        // Handle common Supabase errors with user-friendly messages
+        if (error.message.includes('User already registered')) {
+          setError(t('errors.emailExists'))
+        } else if (error.message.includes('duplicate key')) {
+          setError(t('errors.emailExists'))
+        } else {
+          setError(error.message);
+        }
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        setError(String((error as { message: string }).message));
+        const msg = String((error as { message: string }).message);
+        if (msg.includes('User already registered') || msg.includes('duplicate key')) {
+          setError(t('errors.emailExists'))
+        } else {
+          setError(msg);
+        }
       } else {
         setError('An unknown error occurred');
       }
