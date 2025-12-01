@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { Session, User } from '@supabase/supabase-js'
+import { AuthChangeEvent, AuthError, Session, User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getUserProfile } from '@/lib/services/database'
@@ -36,26 +36,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserProfile(profile)
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const syncSessionState = async (session: Session | null) => {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        loadUserProfile(session.user)
+        await loadUserProfile(session.user)
       } else {
         setUserProfile(null)
       }
       setLoading(false)
-    })
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        loadUserProfile(session.user)
-      } else {
-        setUserProfile(null)
+    const handleSessionError = async (error: AuthError | Error) => {
+      console.error('Failed to load auth session', error)
+      const message = error.message ?? ''
+      if (message.includes('Invalid Refresh Token') || message.includes('refresh_token_not_found')) {
+        await supabase.auth.signOut()
       }
-      setLoading(false)
+      await syncSessionState(null)
+    }
+
+    const initializeSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (error) {
+          await handleSessionError(error)
+          return
+        }
+        await syncSessionState(data.session)
+      } catch (err) {
+        console.error('Unexpected auth error', err)
+        await syncSessionState(null)
+      }
+    }
+
+    initializeSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
+      console.log('Auth state changed:', event, session?.user?.id)
+      void syncSessionState(session)
+      void fetch('/auth/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ event, session })
+      }).catch(error => {
+        console.error('Failed to sync auth session to server', error)
+      })
     })
 
     return () => subscription.unsubscribe()
