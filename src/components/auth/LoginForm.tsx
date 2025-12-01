@@ -34,6 +34,8 @@ export function LoginForm() {
   // Determine registration redirect based on referrer
   const getRegistrationRedirect = () => {
     const from = searchParams.get('from')
+    console.log('LoginForm - from parameter:', from)
+    console.log('LoginForm - searchParams:', searchParams.toString())
     
     if (from === 'mentor') return '/register/mentor'
     if (from === 'mentee') return '/register/mentee'
