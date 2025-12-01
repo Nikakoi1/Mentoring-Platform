@@ -2,11 +2,46 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslations } from '@/hooks/useTranslations'
 
 export function CoordinatorDashboard() {
   const { user, userProfile } = useAuth()
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslations({
+    namespace: 'dashboard.coordinator',
+    defaults: {
+      'header.title': 'Coordinator Dashboard',
+      'header.welcome': 'Welcome back',
+      'stats.totalUsers.title': 'Total Users',
+      'stats.totalUsers.subtitle': 'Registered users',
+      'stats.activePairings.title': 'Active Pairings',
+      'stats.activePairings.subtitle': 'Mentor-mentee pairs',
+      'stats.sessions.title': 'Sessions This Month',
+      'stats.sessions.subtitle': 'Total sessions',
+      'stats.completion.title': 'Completion Rate',
+      'stats.completion.subtitle': 'Average progress',
+      'actions.title': 'Admin Actions',
+      'actions.manageUsers': 'Manage Users',
+      'actions.createPairings': 'Create Pairings',
+      'actions.viewReports': 'View Reports',
+      'actions.systemSettings': 'System Settings',
+      'activity.title': 'Recent Activity',
+      'activity.newUser': 'New user registered',
+      'activity.newPairing': 'New pairing created',
+      'activity.sessionCompleted': 'Session completed',
+      'distribution.title': 'User Distribution',
+      'distribution.mentors': 'Mentors',
+      'distribution.mentees': 'Mentees',
+      'distribution.coordinators': 'Coordinators',
+      'health.title': 'System Health',
+      'health.database': 'Database',
+      'health.authentication': 'Authentication',
+      'health.notifications': 'Notifications',
+      'health.ok': '✓ Healthy'
+    }
+  })
 
   useEffect(() => {
     // Load coordinator-specific data here
@@ -25,66 +60,66 @@ export function CoordinatorDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Coordinator Dashboard</h2>
-        <p className="text-gray-600">Welcome back, {userProfile?.full_name || user?.email}!</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('header.title')}</h2>
+        <p className="text-gray-600">{t('header.welcome')}, {userProfile?.full_name || user?.email}!</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Users</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.totalUsers.title')}</h3>
           <p className="text-3xl font-bold text-blue-600">0</p>
-          <p className="text-sm text-gray-500">Registered users</p>
+          <p className="text-sm text-gray-500">{t('stats.totalUsers.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Pairings</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.activePairings.title')}</h3>
           <p className="text-3xl font-bold text-green-600">0</p>
-          <p className="text-sm text-gray-500">Mentor-mentee pairs</p>
+          <p className="text-sm text-gray-500">{t('stats.activePairings.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Sessions This Month</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.sessions.title')}</h3>
           <p className="text-3xl font-bold text-purple-600">0</p>
-          <p className="text-sm text-gray-500">Total sessions</p>
+          <p className="text-sm text-gray-500">{t('stats.sessions.subtitle')}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Completion Rate</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.completion.title')}</h3>
           <p className="text-3xl font-bold text-orange-600">0%</p>
-          <p className="text-sm text-gray-500">Average progress</p>
+          <p className="text-sm text-gray-500">{t('stats.completion.subtitle')}</p>
         </div>
       </div>
 
       {/* Admin Actions */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Admin Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('actions.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link href="/admin/users" className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors block">
             <div className="text-center">
               <div className="text-2xl mb-2">👥</div>
-              <div className="font-medium">Manage Users</div>
+              <div className="font-medium">{t('actions.manageUsers')}</div>
             </div>
           </Link>
           
           <Link href="/admin/pairings/create" className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors block">
             <div className="text-center">
               <div className="text-2xl mb-2">🔗</div>
-              <div className="font-medium">Create Pairings</div>
+              <div className="font-medium">{t('actions.createPairings')}</div>
             </div>
           </Link>
           
           <Link href="/admin/reports" className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors block">
             <div className="text-center">
               <div className="text-2xl mb-2">📊</div>
-              <div className="font-medium">View Reports</div>
+              <div className="font-medium">{t('actions.viewReports')}</div>
             </div>
           </Link>
           
           <Link href="/admin/settings" className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors block">
             <div className="text-center">
               <div className="text-2xl mb-2">⚙️</div>
-              <div className="font-medium">System Settings</div>
+              <div className="font-medium">{t('actions.systemSettings')}</div>
             </div>
           </Link>
         </div>
@@ -92,14 +127,14 @@ export function CoordinatorDashboard() {
 
       {/* Recent Activity */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('activity.title')}</h3>
         <div className="space-y-3">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
               U
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">New user registered</p>
+              <p className="text-sm font-medium">{t('activity.newUser')}</p>
               <p className="text-xs text-gray-500">2 hours ago</p>
             </div>
           </div>
@@ -109,7 +144,7 @@ export function CoordinatorDashboard() {
               P
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">New pairing created</p>
+              <p className="text-sm font-medium">{t('activity.newPairing')}</p>
               <p className="text-xs text-gray-500">5 hours ago</p>
             </div>
           </div>
@@ -119,7 +154,7 @@ export function CoordinatorDashboard() {
               S
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Session completed</p>
+              <p className="text-sm font-medium">{t('activity.sessionCompleted')}</p>
               <p className="text-xs text-gray-500">1 day ago</p>
             </div>
           </div>
@@ -129,37 +164,37 @@ export function CoordinatorDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">User Distribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('distribution.title')}</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Mentors</span>
+              <span className="text-sm text-gray-600">{t('distribution.mentors')}</span>
               <span className="font-medium">0</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Mentees</span>
+              <span className="text-sm text-gray-600">{t('distribution.mentees')}</span>
               <span className="font-medium">0</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Coordinators</span>
+              <span className="text-sm text-gray-600">{t('distribution.coordinators')}</span>
               <span className="font-medium">1</span>
             </div>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">System Health</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('health.title')}</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Database</span>
-              <span className="text-green-600 font-medium">✓ Healthy</span>
+              <span className="text-sm text-gray-600">{t('health.database')}</span>
+              <span className="text-green-600 font-medium">{t('health.ok')}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Authentication</span>
-              <span className="text-green-600 font-medium">✓ Active</span>
+              <span className="text-sm text-gray-600">{t('health.authentication')}</span>
+              <span className="text-green-600 font-medium">{t('health.ok')}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Notifications</span>
-              <span className="text-green-600 font-medium">✓ Running</span>
+              <span className="text-sm text-gray-600">{t('health.notifications')}</span>
+              <span className="text-green-600 font-medium">{t('health.ok')}</span>
             </div>
           </div>
         </div>
