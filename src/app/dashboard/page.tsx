@@ -23,29 +23,13 @@ export default function DashboardPage() {
   })
 
   useEffect(() => {
-    const userId = user ? user.id : 'no-user'
-    const profileId = userProfile ? userProfile.id : 'no-profile'
-
-    console.log('Dashboard auth check:', { 
-      loading, 
-      userId,
-      userProfileId: profileId 
-    })
-    
-    // Simple check: if we're on dashboard page and user becomes null briefly, 
-    // don't redirect immediately - wait a bit to see if auth state recovers
+    // Immediate redirect for unauthenticated users
     if (!loading && !user) {
-      console.log('User is null, waiting to see if auth recovers...')
-      const timer = setTimeout(() => {
-        console.log('Timer fired, user still:', userId)
-        if (!user) {
-          console.log('Redirecting to login - user definitively not present')
-          router.push('/login')
-        }
-      }, 2000) // Wait 2 seconds before redirecting
-      return () => clearTimeout(timer)
+      console.log('Redirecting to login - user not authenticated')
+      router.push('/login')
+      return
     }
-  }, [user, userProfile, loading, router])
+  }, [user, loading, router])
 
   if (loading || !user) {
     return (
