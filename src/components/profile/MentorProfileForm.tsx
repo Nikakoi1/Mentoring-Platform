@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+
 import { updateMentorProfile } from '@/lib/services/database'
 import type { Mentor } from '@/lib/types/database'
+import { useTranslations } from '@/hooks/useTranslations'
 
 interface MentorProfileFormProps {
   mentorProfile: Mentor;
@@ -17,6 +19,25 @@ export function MentorProfileForm({ mentorProfile }: MentorProfileFormProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const { t } = useTranslations({
+    namespace: 'profile.form.mentor',
+    defaults: {
+      'label.bio': 'Bio',
+      'label.skills': 'Skills',
+      'label.expertise': 'Areas of Expertise',
+      'label.experience': 'Years of Experience',
+      'label.linkedin': 'LinkedIn Profile URL',
+      'placeholder.bio': 'Share a bit about your background, experience, and what you enjoy about mentoring.',
+      'placeholder.skills': 'e.g., React, Node.js, Python',
+      'placeholder.expertise': 'e.g., Frontend Development, DevOps',
+      'placeholder.linkedin': 'https://linkedin.com/in/your-profile',
+      'hint.separator': 'Separate values with a comma.',
+      'error.update': 'Failed to update mentor details',
+      'success.update': 'Mentor details updated successfully!',
+      'cta.saving': 'Saving...',
+      'cta.submit': 'Save Mentor Details'
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,9 +56,9 @@ export function MentorProfileForm({ mentorProfile }: MentorProfileFormProps) {
     const { error: updateError } = await updateMentorProfile(mentorProfile.id, updates)
 
     if (updateError) {
-      setError(`Failed to update mentor details: ${updateError.message}`)
+      setError(`${t('error.update')}: ${updateError.message}`)
     } else {
-      setSuccess('Mentor details updated successfully!')
+      setSuccess(t('success.update'))
     }
     setSubmitting(false)
   }
@@ -45,41 +66,41 @@ export function MentorProfileForm({ mentorProfile }: MentorProfileFormProps) {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-sm font-medium mb-1">Bio</label>
+        <label className="block text-sm font-medium mb-1">{t('label.bio')}</label>
         <textarea
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
-          placeholder="Share a bit about your background, experience, and what you enjoy about mentoring."
+          placeholder={t('placeholder.bio')}
         />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-1">Skills</label>
+          <label className="block text-sm font-medium mb-1">{t('label.skills')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={skills}
             onChange={(e) => setSkills(e.target.value)}
-            placeholder="e.g., React, Node.js, Python"
+            placeholder={t('placeholder.skills')}
           />
-          <p className="text-xs text-gray-500 mt-1">Separate skills with a comma.</p>
+          <p className="text-xs text-gray-500 mt-1">{t('hint.separator')}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Areas of Expertise</label>
+          <label className="block text-sm font-medium mb-1">{t('label.expertise')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={expertiseAreas}
             onChange={(e) => setExpertiseAreas(e.target.value)}
-            placeholder="e.g., Frontend Development, DevOps"
+            placeholder={t('placeholder.expertise')}
           />
-           <p className="text-xs text-gray-500 mt-1">Separate areas with a comma.</p>
+           <p className="text-xs text-gray-500 mt-1">{t('hint.separator')}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Years of Experience</label>
+          <label className="block text-sm font-medium mb-1">{t('label.experience')}</label>
           <input
             type="number"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -88,13 +109,13 @@ export function MentorProfileForm({ mentorProfile }: MentorProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">LinkedIn Profile URL</label>
+          <label className="block text-sm font-medium mb-1">{t('label.linkedin')}</label>
           <input
             type="url"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={linkedinUrl}
             onChange={(e) => setLinkedinUrl(e.target.value)}
-            placeholder="https://linkedin.com/in/your-profile"
+            placeholder={t('placeholder.linkedin')}
           />
         </div>
       </div>
@@ -108,7 +129,7 @@ export function MentorProfileForm({ mentorProfile }: MentorProfileFormProps) {
           className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           disabled={submitting}
         >
-          {submitting ? 'Saving...' : 'Save Mentor Details'}
+          {submitting ? t('cta.saving') : t('cta.submit')}
         </button>
       </div>
     </form>

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+
 import { updateMenteeProfile } from '@/lib/services/database'
 import type { Mentee, ExperienceLevel } from '@/lib/types/database'
+import { useTranslations } from '@/hooks/useTranslations'
 
 interface MenteeProfileFormProps {
   menteeProfile: Mentee;
@@ -16,6 +18,25 @@ export function MenteeProfileForm({ menteeProfile }: MenteeProfileFormProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const { t } = useTranslations({
+    namespace: 'profile.form.mentee',
+    defaults: {
+      'label.careerGoals': 'Career Goals',
+      'label.learningObjectives': 'Learning Objectives',
+      'label.yearsExperience': 'Years of Professional Experience',
+      'label.currentLevel': 'Current Skill Level',
+      'placeholder.careerGoals': 'e.g., Become a Senior Developer, Lead a team',
+      'placeholder.learningObjectives': 'e.g., Improve TypeScript skills, Learn system design',
+      'hint.separator': 'Separate values with a comma.',
+      'options.level.beginner': 'Beginner',
+      'options.level.intermediate': 'Intermediate',
+      'options.level.advanced': 'Advanced',
+      'error.update': 'Failed to update mentee details',
+      'success.update': 'Mentee details updated successfully!',
+      'cta.saving': 'Saving...',
+      'cta.submit': 'Save Mentee Details'
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +54,9 @@ export function MenteeProfileForm({ menteeProfile }: MenteeProfileFormProps) {
     const { error: updateError } = await updateMenteeProfile(menteeProfile.id, updates)
 
     if (updateError) {
-      setError(`Failed to update mentee details: ${updateError.message}`)
+      setError(`${t('error.update')}: ${updateError.message}`)
     } else {
-      setSuccess('Mentee details updated successfully!')
+      setSuccess(t('success.update'))
     }
     setSubmitting(false)
   }
@@ -43,32 +64,32 @@ export function MenteeProfileForm({ menteeProfile }: MenteeProfileFormProps) {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-sm font-medium mb-1">Career Goals</label>
+        <label className="block text-sm font-medium mb-1">{t('label.careerGoals')}</label>
         <textarea
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={careerGoals}
           onChange={(e) => setCareerGoals(e.target.value)}
           rows={3}
-          placeholder="e.g., Become a Senior Developer, Lead a team"
+          placeholder={t('placeholder.careerGoals')}
         />
-        <p className="text-xs text-gray-500 mt-1">Separate goals with a comma.</p>
+        <p className="text-xs text-gray-500 mt-1">{t('hint.separator')}</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Learning Objectives</label>
+        <label className="block text-sm font-medium mb-1">{t('label.learningObjectives')}</label>
         <textarea
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={learningObjectives}
           onChange={(e) => setLearningObjectives(e.target.value)}
           rows={3}
-          placeholder="e.g., Improve TypeScript skills, Learn system design"
+          placeholder={t('placeholder.learningObjectives')}
         />
-        <p className="text-xs text-gray-500 mt-1">Separate objectives with a comma.</p>
+        <p className="text-xs text-gray-500 mt-1">{t('hint.separator')}</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-1">Years of Professional Experience</label>
+          <label className="block text-sm font-medium mb-1">{t('label.yearsExperience')}</label>
           <input
             type="number"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -77,15 +98,15 @@ export function MenteeProfileForm({ menteeProfile }: MenteeProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Current Skill Level</label>
+          <label className="block text-sm font-medium mb-1">{t('label.currentLevel')}</label>
           <select
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={currentLevel}
             onChange={(e) => setCurrentLevel(e.target.value as ExperienceLevel)}
           >
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
+            <option value="beginner">{t('options.level.beginner')}</option>
+            <option value="intermediate">{t('options.level.intermediate')}</option>
+            <option value="advanced">{t('options.level.advanced')}</option>
           </select>
         </div>
       </div>
@@ -99,7 +120,7 @@ export function MenteeProfileForm({ menteeProfile }: MenteeProfileFormProps) {
           className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           disabled={submitting}
         >
-          {submitting ? 'Saving...' : 'Save Mentee Details'}
+          {submitting ? t('cta.saving') : t('cta.submit')}
         </button>
       </div>
     </form>

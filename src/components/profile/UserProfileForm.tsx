@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+
 import { updateUserProfile } from '@/lib/services/database'
 import type { UserWithRole } from '@/lib/types/database'
+import { useTranslations } from '@/hooks/useTranslations'
 
 interface UserProfileFormProps {
   userProfile: UserWithRole;
@@ -16,6 +18,21 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const { t } = useTranslations({
+    namespace: 'profile.form.general',
+    defaults: {
+      'label.fullName': 'Full Name',
+      'label.phone': 'Phone Number',
+      'label.location': 'Location',
+      'label.timezone': 'Timezone',
+      'placeholder.location': 'e.g., San Francisco, CA',
+      'placeholder.timezone': 'e.g., PST',
+      'error.update': 'Failed to update profile',
+      'success.update': 'Profile updated successfully!',
+      'cta.saving': 'Saving...',
+      'cta.submit': 'Save Changes'
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +50,9 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
     const { error: updateError } = await updateUserProfile(userProfile.id, updates)
 
     if (updateError) {
-      setError(`Failed to update profile: ${updateError.message}`)
+      setError(`${t('error.update')}: ${updateError.message}`)
     } else {
-      setSuccess('Profile updated successfully!')
+      setSuccess(t('success.update'))
       // Optionally, refresh the user profile in the auth context
     }
     setSubmitting(false)
@@ -45,7 +62,7 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-1">Full Name</label>
+          <label className="block text-sm font-medium mb-1">{t('label.fullName')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -54,7 +71,7 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Phone Number</label>
+          <label className="block text-sm font-medium mb-1">{t('label.phone')}</label>
           <input
             type="tel"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -63,23 +80,23 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Location</label>
+          <label className="block text-sm font-medium mb-1">{t('label.location')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g., San Francisco, CA"
+            placeholder={t('placeholder.location')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Timezone</label>
+          <label className="block text-sm font-medium mb-1">{t('label.timezone')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            placeholder="e.g., PST"
+            placeholder={t('placeholder.timezone')}
           />
         </div>
       </div>
@@ -93,7 +110,7 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           disabled={submitting}
         >
-          {submitting ? 'Saving...' : 'Save Changes'}
+          {submitting ? t('cta.saving') : t('cta.submit')}
         </button>
       </div>
     </form>
