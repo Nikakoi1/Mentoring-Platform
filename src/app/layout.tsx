@@ -1,7 +1,6 @@
-'use client'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AppProviders } from '@/components/providers/AppProviders'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -11,13 +10,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
+        <AppProviders>
           <main className="min-h-screen bg-gray-50">
             {children}
           </main>
-        </AuthProvider>
+        </AppProviders>
       </body>
     </html>
   )
