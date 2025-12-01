@@ -14,6 +14,12 @@ export default function Home() {
       'nav.dashboard': 'Dashboard',
       'nav.signIn': 'Sign In',
       'nav.register': 'Register',
+      'nav.registerMentor': 'Register as Mentor',
+      'nav.registerMentee': 'Register as Mentee',
+      // Georgian nav
+      'ka.nav.signIn': 'შესვლა',
+      'ka.nav.registerMentor': 'რეგისტრაცია მენტორად',
+      'ka.nav.registerMentee': 'რეგისტრაცია მოსწავლედ',
       'hero.heading.leading': 'Welcome to the',
       'hero.heading.highlight': 'Mentoring Platform',
       'hero.description': 'Connect mentors and mentees for meaningful professional development relationships. Build skills, share knowledge, and grow together.',
@@ -52,7 +58,7 @@ export default function Home() {
                   {t('nav.dashboard')}
                 </Link>
               ) : (
-                <div className="space-x-4">
+                <div className="space-x-2">
                   <a
                     href="/login"
                     className="text-blue-600 hover:text-blue-700 font-medium"
@@ -60,10 +66,16 @@ export default function Home() {
                     {t('nav.signIn')}
                   </a>
                   <a
-                    href="/register"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium"
+                    href="/register/mentor"
+                    className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 font-medium text-sm"
                   >
-                    {t('nav.register')}
+                    {t('nav.registerMentor')}
+                  </a>
+                  <a
+                    href="/register/mentee"
+                    className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 font-medium text-sm"
+                  >
+                    {t('nav.registerMentee')}
                   </a>
                 </div>
               )}
@@ -93,10 +105,16 @@ export default function Home() {
             ) : (
               <div className="space-y-3 sm:space-y-0 sm:space-x-3 sm:flex">
                 <Link
-                  href="/login"
+                  href="/register/mentor"
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-colors"
                 >
-                  {t('hero.ctaGetStarted')}
+                  {t('nav.registerMentor')}
+                </Link>
+                <Link
+                  href="/register/mentee"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-4 md:text-lg md:px-10 transition-colors"
+                >
+                  {t('nav.registerMentee')}
                 </Link>
                 <a
                   href="#features"

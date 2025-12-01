@@ -45,15 +45,28 @@ export function LoginForm() {
 
       // Get user profile to determine role-based redirect
       if (authData.user) {
-        const { error: profileError } = await getUserProfile(authData.user.id)
+        const { data: profile, error: profileError } = await getUserProfile(authData.user.id)
         
-        if (profileError) {
+        if (profileError || !profile) {
           console.warn('Could not fetch user profile:', profileError)
           router.push('/dashboard')
           return
         }
 
-        router.push('/dashboard')
+        // Role-based routing
+        switch (profile.role) {
+          case 'mentor':
+            router.push('/mentor')
+            break
+          case 'mentee':
+            router.push('/mentee')
+            break
+          case 'coordinator':
+            router.push('/admin')
+            break
+          default:
+            router.push('/dashboard')
+        }
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
