@@ -13,7 +13,7 @@ interface UserProfileFormProps {
 export function UserProfileForm({ userProfile }: UserProfileFormProps) {
   const [fullName, setFullName] = useState(userProfile.full_name || '')
   const [phone, setPhone] = useState(userProfile.phone || '')
-  const [location, setLocation] = useState(userProfile.location || '')
+  const [region, setRegion] = useState(userProfile.region || '')
   const [timezone, setTimezone] = useState(userProfile.timezone || '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -23,10 +23,10 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
     defaults: {
       'label.fullName': 'Full Name',
       'label.phone': 'Phone Number',
-      'label.location': 'Location',
+      'label.region': 'Region',
       'label.timezone': 'Timezone',
-      'placeholder.location': 'e.g., San Francisco, CA',
-      'placeholder.timezone': 'e.g., PST',
+      'placeholder.region': 'e.g., Tbilisi, Georgia',
+      'placeholder.timezone': 'e.g., GMT+4',
       'error.update': 'Failed to update profile',
       'success.update': 'Profile updated successfully!',
       'cta.saving': 'Saving...',
@@ -43,7 +43,7 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
     const updates = {
       full_name: fullName,
       phone,
-      location,
+      region,
       timezone,
     }
 
@@ -80,13 +80,13 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t('label.location')}</label>
+          <label className="block text-sm font-medium mb-1">{t('label.region')}</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder={t('placeholder.location')}
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            placeholder={t('placeholder.region')}
           />
         </div>
         <div>
