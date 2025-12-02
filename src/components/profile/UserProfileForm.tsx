@@ -11,6 +11,7 @@ interface UserProfileFormProps {
 }
 
 export function UserProfileForm({ userProfile }: UserProfileFormProps) {
+  const { refreshUserProfile } = useAuth()
   const [fullName, setFullName] = useState(userProfile.full_name || '')
   const [phone, setPhone] = useState(userProfile.phone || '')
   const [region, setRegion] = useState(userProfile.region || '')
@@ -56,7 +57,8 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
       setError(`${t('error.update')}: ${updateError.message}`)
     } else {
       setSuccess(t('success.update'))
-      // Optionally, refresh the user profile in the auth context
+      // Refresh the user profile in the auth context
+      await refreshUserProfile()
     }
     setSubmitting(false)
   }

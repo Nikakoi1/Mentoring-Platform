@@ -13,6 +13,7 @@ type AuthContextType = {
   session: Session | null
   loading: boolean
   signOut: () => Promise<void>
+  refreshUserProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   signOut: async () => {},
+  refreshUserProfile: async () => {},
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -96,8 +98,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login')
   }
 
+  const refreshUserProfile = async () => {
+    if (user) {
+      const { data: profile } = await getUserProfile(user.id)
+      setUserProfile(profile)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, userProfile, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, session, loading, signOut, refreshUserProfile }}>
       {children}
     </AuthContext.Provider>
   )
