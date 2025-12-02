@@ -34,6 +34,9 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
     }
   })
 
+  // Force region label to be "Region" regardless of database translations
+  const getRegionLabel = () => 'Region'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
@@ -80,13 +83,13 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t('label.region')}</label>
+          <label className="block text-sm font-medium mb-1">Region</label>
           <input
             type="text"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            placeholder={t('placeholder.region')}
+            placeholder="e.g., Tbilisi, Georgia"
           />
         </div>
         <div>
