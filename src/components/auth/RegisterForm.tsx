@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { UserRole } from '@/lib/types/database'
 import { useTranslations } from '@/hooks/useTranslations'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function RegisterForm() {
   const [email, setEmail] = useState('')
@@ -16,6 +17,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { locale } = useLanguage()
   const { t } = useTranslations({
     namespace: 'auth.register',
     defaults: {
@@ -54,7 +56,8 @@ export function RegisterForm() {
           data: {
             full_name: fullName,
             role: role,
-            region: requiresRegion ? region : undefined
+            region: requiresRegion ? region : undefined,
+            locale
           }
         }
       })

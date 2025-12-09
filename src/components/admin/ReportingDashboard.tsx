@@ -55,6 +55,7 @@ interface SessionDetail {
   evaluation_comment: string | null
   goals_worked_on: string | null
   resources_shared: SessionDetailResource[]
+  session_type: string  // 'session' or 'client_visit'
 }
 
 interface MentorOption {
@@ -124,7 +125,11 @@ export function ReportingDashboard() {
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
     return firstDay.toISOString().split('T')[0]
   }, [])
-  const initialEndDate = useMemo(() => new Date().toISOString().split('T')[0], [])
+  const initialEndDate = useMemo(() => {
+  const futureDate = new Date()
+  futureDate.setFullYear(futureDate.getFullYear() + 1)
+  return futureDate.toISOString().split('T')[0]
+}, [])
 
   // Filter states
   const [startDate, setStartDate] = useState(initialStartDate)
@@ -252,14 +257,24 @@ export function ReportingDashboard() {
       // Fetch session details if not already loaded
       if (!menteeSessions[menteeId]) {
         try {
+          console.log('Fetching sessions for menteeId:', menteeId)
           const { data: sessionsData } = await getMenteeSessionDetails(menteeId, startDate, endDate)
+          console.log('Received sessions data:', sessionsData)
           setMenteeSessions(prev => ({
             ...prev,
             [menteeId]: (sessionsData ?? []).map((session) => ({
-              ...session,
-              resources_shared: session.resources_shared ?? []
+              session_id: session.session_id,
+              title: session.title,
+              scheduled_time: session.scheduled_time,
+              status: session.status,
+              evaluation_rating: session.evaluation_rating,
+              evaluation_comment: session.evaluation_comment,
+              goals_worked_on: session.goals_worked_on,
+              resources_shared: session.resources_shared ?? [],
+              session_type: session.session_type
             }))
           }))
+          console.log('Set menteeSessions for key:', menteeId)
         } catch (err) {
           console.error('Failed to fetch session details:', err)
         }
@@ -592,7 +607,12 @@ export function ReportingDashboard() {
                           {expandedMentees.has(mentee.mentee_id) && (
                             <div className="p-3 border-t border-gray-100">
                               <h5 className="font-medium mb-2">{t('session.details')}</h5>
-                              {menteeSessions[mentee.mentee_id] ? (
+                              {(() => {
+                                console.log('Rendering session details for mentee_id:', mentee.mentee_id)
+                                console.log('Available menteeSessions keys:', Object.keys(menteeSessions))
+                                console.log('Sessions for this mentee:', menteeSessions[mentee.mentee_id])
+                                return menteeSessions[mentee.mentee_id]
+                              })() ? (
                                 <div className="space-y-2">
                                   {menteeSessions[mentee.mentee_id].map((session) => (
                                     <div key={session.session_id} className="bg-white p-3 border border-gray-100 rounded">

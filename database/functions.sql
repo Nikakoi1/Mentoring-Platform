@@ -159,7 +159,7 @@ RETURNS TABLE (
 ) AS $$
 DECLARE
   v_start_date DATE := COALESCE(start_date, DATE_TRUNC('month', CURRENT_DATE));
-  v_end_date DATE := COALESCE(end_date, CURRENT_DATE);
+  v_end_date DATE := COALESCE(end_date, CURRENT_DATE + INTERVAL '1 year');
 BEGIN
   RETURN QUERY
   SELECT 

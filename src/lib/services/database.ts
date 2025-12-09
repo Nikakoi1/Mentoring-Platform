@@ -432,6 +432,7 @@ export interface SessionDetailRow {
     title?: string
     resource_type?: string
   }[] | null
+  session_type: string  // 'session' or 'client_visit'
 }
 
 export const getDetailedMentorAnalytics = async (

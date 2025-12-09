@@ -96,10 +96,10 @@ export interface User {
   full_name?: string
   role: UserRole
   region?: string
+  locale?: string
   profile?: Record<string, unknown>
   avatar_url?: string
   phone?: string
-  location?: string
   timezone?: string
   active: boolean
   created_at: string
@@ -198,7 +198,6 @@ export interface Session {
   duration_minutes: number
   session_type?: SessionType
   mode: SessionMode
-  location?: string
   meeting_link?: string
   meeting_password?: string
   topics?: string[]
@@ -369,7 +368,6 @@ export interface CreateUserForm {
   role: UserRole
   region?: string
   phone?: string
-  location?: string
 }
 
 export interface CreateMentorForm extends CreateUserForm {
@@ -401,7 +399,6 @@ export interface CreateSessionForm {
   duration_minutes?: number
   session_type?: SessionType
   mode?: SessionMode
-  location?: string
   meeting_link?: string
   topics?: string[]
   agenda?: string

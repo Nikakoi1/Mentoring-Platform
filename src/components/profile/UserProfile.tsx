@@ -27,7 +27,6 @@ export function UserProfile({ userId }: UserProfileProps) {
       'role.default': 'User',
       'contact.title': 'Contact Information',
       'contact.phone': 'Phone:',
-      'contact.location': 'Location:',
       'contact.region': 'Region:',
       'contact.timezone': 'Timezone:',
       'contact.notProvided': 'Not provided',
@@ -247,7 +246,6 @@ export function UserProfile({ userId }: UserProfileProps) {
           <h2 className="text-xl font-bold mb-4">{t('contact.title')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
             <p><strong>{t('contact.phone')}</strong> {profile.phone || t('contact.notProvided')}</p>
-            <p><strong>{t('contact.location')}</strong> {profile.location || t('contact.notProvided')}</p>
             <p><strong>{t('contact.region')}</strong> {profile.region || t('contact.notProvided')}</p>
             <p><strong>{t('contact.timezone')}</strong> {profile.timezone || t('contact.notProvided')}</p>
           </div>

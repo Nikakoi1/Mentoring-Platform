@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { supabase } from '@/lib/supabase/client'
 import { useTranslations } from '@/hooks/useTranslations'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function MenteeRegisterForm() {
   const [email, setEmail] = useState('')
@@ -14,6 +15,7 @@ export function MenteeRegisterForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { locale } = useLanguage()
   const { t } = useTranslations({
     namespace: 'auth.register',
     defaults: {
@@ -57,7 +59,8 @@ export function MenteeRegisterForm() {
           data: {
             full_name: fullName,
             role: 'mentee',
-            region
+            region,
+            locale
           }
         }
       })

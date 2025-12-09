@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { updateUserProfile } from '@/lib/services/database'
 import type { UserWithRole } from '@/lib/types/database'
+import { useAuth } from '@/contexts/AuthContext'
 import { useTranslations } from '@/hooks/useTranslations'
 
 interface UserProfileFormProps {
@@ -40,6 +41,15 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('UserProfileForm: Starting save process')
+    console.log('UserProfileForm: User ID:', userProfile.id)
+    console.log('UserProfileForm: Updates to apply:', {
+      full_name: fullName,
+      phone,
+      region,
+      timezone,
+    })
+    
     setSubmitting(true)
     setError('')
     setSuccess('')
@@ -51,11 +61,15 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
       timezone,
     }
 
+    console.log('UserProfileForm: Calling updateUserProfile...')
     const { error: updateError } = await updateUserProfile(userProfile.id, updates)
+    console.log('UserProfileForm: updateUserProfile result:', { error: updateError })
 
     if (updateError) {
+      console.error('UserProfileForm: Update failed:', updateError)
       setError(`${t('error.update')}: ${updateError.message}`)
     } else {
+      console.log('UserProfileForm: Update successful')
       setSuccess(t('success.update'))
       // Refresh the user profile in the auth context
       await refreshUserProfile()
