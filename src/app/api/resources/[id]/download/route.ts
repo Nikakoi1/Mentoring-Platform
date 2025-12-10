@@ -3,8 +3,6 @@ import type { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 
-import { supabaseAdmin } from '@/lib/supabase/admin'
-
 const RESOURCES_BUCKET = process.env.SUPABASE_RESOURCES_BUCKET ?? 'resources'
 const SIGNED_URL_EXPIRY_SECONDS = Number(process.env.SUPABASE_SIGNED_URL_EXPIRY_SECONDS ?? '3600')
 
@@ -51,6 +49,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
   if (!canAccess) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+
+  // Import supabaseAdmin only when needed to avoid build-time env var requirements
+  const { supabaseAdmin } = await import('@/lib/supabase/admin')
 
   const { data: signed, error: signedError } = await supabaseAdmin.storage
     .from(RESOURCES_BUCKET)
