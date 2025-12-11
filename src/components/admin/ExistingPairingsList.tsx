@@ -107,7 +107,7 @@ export function ExistingPairingsList() {
               key={pairing.id}
               className="p-4 border rounded-lg hover:shadow-md transition-shadow"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <span className="text-sm font-medium text-gray-600">{t('mentorLabel')}</span>
                   <p className="font-medium">
@@ -132,12 +132,12 @@ export function ExistingPairingsList() {
                   <span className="text-sm font-medium text-gray-600">{t('createdLabel')}</span>
                   <p className="font-medium">{formatDate(pairing.created_at)}</p>
                 </div>
-              </div>
-              <div className="mt-3 pt-3 border-t">
-                <span className="text-sm font-medium text-gray-600">{t('coordinatorLabel')}</span>
-                <p className="text-sm text-gray-700">
-                  {pairing.coordinator?.full_name || pairing.coordinator?.email || 'Unknown'}
-                </p>
+                <div>
+                  <span className="text-sm font-medium text-gray-600">{t('coordinatorLabel')}</span>
+                  <p className="text-sm text-gray-700">
+                    {pairing.coordinator?.full_name || pairing.coordinator?.email || 'Unknown'}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
