@@ -641,6 +641,20 @@ export const updatePairing = async (pairingId: string, updates: Partial<Pairing>
   return { data, error }
 }
 
+export const getAllPairings = async (): Promise<DatabaseFunction<PairingWithUsers[]>> => {
+  const { data, error } = await supabase
+    .from('pairings')
+    .select(`
+      *,
+      mentor:mentor_id(*),
+      mentee:mentee_id(*),
+      coordinator:coordinator_id(*)
+    `)
+    .order('created_at', { ascending: false })
+
+  return { data, error }
+}
+
 // Session functions
 export const getUserSessions = async (userId: string): Promise<DatabaseFunction<SessionWithUsers[]>> => {
   const { data, error } = await supabase
