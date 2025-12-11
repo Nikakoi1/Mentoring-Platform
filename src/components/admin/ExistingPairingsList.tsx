@@ -1,5 +1,6 @@
 'use client'
 
+// Force rebuild for cache fix - v2
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslations } from '@/hooks/useTranslations'
