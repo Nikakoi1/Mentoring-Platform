@@ -646,9 +646,9 @@ export const getAllPairings = async (): Promise<DatabaseFunction<PairingWithUser
     .from('pairings')
     .select(`
       *,
-      mentor:mentor_id(*, mentor:mentors(*)),
-      mentee:mentee_id(*, mentee:mentees(*)),
-      coordinator:coordinator_id(*)
+      mentor:users!mentor_id(*),
+      mentee:users!mentee_id(*),
+      coordinator:users!coordinator_id(*)
     `)
     .order('created_at', { ascending: false })
 
