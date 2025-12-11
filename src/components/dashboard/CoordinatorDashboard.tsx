@@ -107,14 +107,6 @@ export function CoordinatorDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Debug Info - Remove this once working */}
-      <div className="bg-yellow-50 p-4 rounded-lg text-xs">
-        <strong>Debug Info:</strong>
-        <br />Loading: {loading.toString()}
-        <br />Analytics: {analytics ? JSON.stringify(analytics) : 'null'}
-        <br />User: {user?.id}
-      </div>
-
       {/* Header */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('header.title')}</h2>
@@ -125,26 +117,32 @@ export function CoordinatorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.totalUsers.title')}</h3>
-          <p className="text-3xl font-bold text-blue-600">{analytics?.totalUsers || 0}</p>
+          <p className="text-3xl font-bold text-blue-600">
+            {analytics ? analytics.totalUsers : 'NO_ANALYTICS'}
+          </p>
           <p className="text-sm text-gray-500">{t('stats.totalUsers.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.activePairings.title')}</h3>
-          <p className="text-3xl font-bold text-green-600">{analytics?.activePairings || 0}</p>
+          <p className="text-3xl font-bold text-green-600">
+            {analytics ? analytics.activePairings : 'NO_ANALYTICS'}
+          </p>
           <p className="text-sm text-gray-500">{t('stats.activePairings.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.sessions.title')}</h3>
-          <p className="text-3xl font-bold text-purple-600">{analytics?.sessionsThisMonth || 0}</p>
+          <p className="text-3xl font-bold text-purple-600">
+            {analytics ? analytics.sessionsThisMonth : 'NO_ANALYTICS'}
+          </p>
           <p className="text-sm text-gray-500">{t('stats.sessions.subtitle')}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.completion.title')}</h3>
           <p className="text-3xl font-bold text-orange-600">
-            {analytics?.averageSessionRating ? `${analytics.averageSessionRating.toFixed(1)}★` : '0.0★'}
+            {analytics ? `${analytics.averageSessionRating.toFixed(1)}★` : 'NO_ANALYTICS'}
           </p>
           <p className="text-sm text-gray-500">{t('stats.completion.subtitle')}</p>
         </div>
