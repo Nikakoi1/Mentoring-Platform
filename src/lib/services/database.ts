@@ -642,15 +642,7 @@ export const updatePairing = async (pairingId: string, updates: Partial<Pairing>
 }
 
 export const getAllPairings = async (): Promise<DatabaseFunction<PairingWithUsers[]>> => {
-  const { data, error } = await supabase
-    .from('pairings')
-    .select(`
-      *,
-      mentor:users!mentor_id(*),
-      mentee:users!mentee_id(*),
-      coordinator:users!coordinator_id(*)
-    `)
-    .order('created_at', { ascending: false })
+  const { data, error } = await supabase.rpc('get_all_pairings_with_details')
 
   return { data, error }
 }
