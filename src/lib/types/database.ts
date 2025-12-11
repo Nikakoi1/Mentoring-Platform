@@ -319,8 +319,8 @@ export interface ClientWithVisits extends Client {
 }
 
 export interface PairingWithUsers extends Pairing {
-  mentor: User
-  mentee: User
+  mentor: User & { mentor: Mentor }
+  mentee: User & { mentee: Mentee }
   coordinator?: User
 }
 
