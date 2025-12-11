@@ -29,14 +29,26 @@ BEGIN
         p.end_date,
         p.created_at,
         p.updated_at,
-        row_to_json(mentor_user.*) || jsonb_build_object('mentor', row_to_json(mentor_profile.*)) as mentor,
-        row_to_json(mentee_user.*) || jsonb_build_object('mentee', row_to_json(mentee_profile.*)) as mentee,
-        row_to_json(coordinator_user.*) as coordinator
+        jsonb_build_object(
+            'id', mentor_user.id,
+            'full_name', mentor_user.full_name,
+            'email', mentor_user.email,
+            'mentor', (SELECT row_to_json(m.*) FROM mentors m WHERE m.id = mentor_user.id)
+        ) as mentor,
+        jsonb_build_object(
+            'id', mentee_user.id,
+            'full_name', mentee_user.full_name,
+            'email', mentee_user.email,
+            'mentee', (SELECT row_to_json(me.*) FROM mentees me WHERE me.id = mentee_user.id)
+        ) as mentee,
+        jsonb_build_object(
+            'id', coordinator_user.id,
+            'full_name', coordinator_user.full_name,
+            'email', coordinator_user.email
+        ) as coordinator
     FROM pairings p
     LEFT JOIN users mentor_user ON p.mentor_id = mentor_user.id
-    LEFT JOIN mentors mentor_profile ON mentor_user.id = mentor_profile.user_id
     LEFT JOIN users mentee_user ON p.mentee_id = mentee_user.id
-    LEFT JOIN mentees mentee_profile ON mentee_user.id = mentee_profile.user_id
     LEFT JOIN users coordinator_user ON p.coordinator_id = coordinator_user.id
     ORDER BY p.created_at DESC;
 END;
