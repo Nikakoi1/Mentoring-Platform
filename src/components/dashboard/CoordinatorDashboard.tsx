@@ -5,10 +5,13 @@ import Link from 'next/link'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslations } from '@/hooks/useTranslations'
+import { getPlatformAnalytics, getAllPairings, getAllUsers } from '@/lib/services/database'
+import type { PlatformAnalytics } from '@/lib/types/database'
 
 export function CoordinatorDashboard() {
   const { user, userProfile } = useAuth()
   const [loading, setLoading] = useState(true)
+  const [analytics, setAnalytics] = useState<PlatformAnalytics | null>(null)
   const { t } = useTranslations({
     namespace: 'dashboard.coordinator',
     defaults: {
@@ -44,8 +47,54 @@ export function CoordinatorDashboard() {
   })
 
   useEffect(() => {
-    // Load coordinator-specific data here
-    setLoading(false)
+    const fetchAnalytics = async () => {
+      try {
+        console.log('Fetching platform analytics...')
+        const { data, error } = await getPlatformAnalytics()
+        console.log('Analytics response:', { data, error })
+        if (error) {
+          console.error('Failed to fetch analytics via RPC:', error)
+          console.log('Falling back to manual data fetch...')
+          
+          // Fallback: fetch data manually using existing functions
+          const [pairingsResult, usersResult] = await Promise.all([
+            getAllPairings(),
+            getAllUsers()
+          ])
+          
+          console.log('Fallback data:', { pairingsResult, usersResult })
+          
+          if (!pairingsResult.error && !usersResult.error && pairingsResult.data && usersResult.data) {
+            const activePairings = pairingsResult.data.filter(p => p.status === 'active').length
+            const mentors = usersResult.data.filter(u => u.role === 'mentor').length
+            const mentees = usersResult.data.filter(u => u.role === 'mentee').length
+            
+            const fallbackAnalytics: PlatformAnalytics = {
+              totalUsers: usersResult.data.length,
+              totalMentors: mentors,
+              totalMentees: mentees,
+              activePairings,
+              sessionsThisMonth: 0, // Would need separate query
+              averageSessionRating: 0 // Would need separate query
+            }
+            
+            console.log('Setting fallback analytics:', fallbackAnalytics)
+            setAnalytics(fallbackAnalytics)
+          } else {
+            console.error('Fallback fetch also failed:', { pairingsError: pairingsResult.error, usersError: usersResult.error })
+          }
+        } else {
+          console.log('Setting analytics data:', data)
+          setAnalytics(data)
+        }
+      } catch (err) {
+        console.error('Error fetching analytics:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAnalytics()
   }, [user])
 
   if (loading) {
@@ -58,6 +107,14 @@ export function CoordinatorDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Debug Info - Remove this once working */}
+      <div className="bg-yellow-50 p-4 rounded-lg text-xs">
+        <strong>Debug Info:</strong>
+        <br />Loading: {loading.toString()}
+        <br />Analytics: {analytics ? JSON.stringify(analytics) : 'null'}
+        <br />User: {user?.id}
+      </div>
+
       {/* Header */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('header.title')}</h2>
@@ -68,25 +125,27 @@ export function CoordinatorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.totalUsers.title')}</h3>
-          <p className="text-3xl font-bold text-blue-600">0</p>
+          <p className="text-3xl font-bold text-blue-600">{analytics?.totalUsers || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.totalUsers.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.activePairings.title')}</h3>
-          <p className="text-3xl font-bold text-green-600">0</p>
+          <p className="text-3xl font-bold text-green-600">{analytics?.activePairings || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.activePairings.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.sessions.title')}</h3>
-          <p className="text-3xl font-bold text-purple-600">0</p>
+          <p className="text-3xl font-bold text-purple-600">{analytics?.sessionsThisMonth || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.sessions.subtitle')}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.completion.title')}</h3>
-          <p className="text-3xl font-bold text-orange-600">0%</p>
+          <p className="text-3xl font-bold text-orange-600">
+            {analytics?.averageSessionRating ? `${analytics.averageSessionRating.toFixed(1)}★` : '0.0★'}
+          </p>
           <p className="text-sm text-gray-500">{t('stats.completion.subtitle')}</p>
         </div>
       </div>
@@ -168,15 +227,19 @@ export function CoordinatorDashboard() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{t('distribution.mentors')}</span>
-              <span className="font-medium">0</span>
+              <span className="font-medium">{analytics?.totalMentors || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{t('distribution.mentees')}</span>
-              <span className="font-medium">0</span>
+              <span className="font-medium">{analytics?.totalMentees || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{t('distribution.coordinators')}</span>
-              <span className="font-medium">1</span>
+              <span className="font-medium">
+                {analytics && analytics.totalUsers - analytics.totalMentors - analytics.totalMentees > 0 
+                  ? analytics.totalUsers - analytics.totalMentors - analytics.totalMentees 
+                  : 1}
+              </span>
             </div>
           </div>
         </div>

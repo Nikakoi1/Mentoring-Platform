@@ -79,15 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log('Auth state changed:', event, session?.user?.id)
       void syncSessionState(session)
-      void fetch('/auth/callback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ event, session })
-      }).catch(error => {
-        console.error('Failed to sync auth session to server', error)
-      })
     })
 
     return () => subscription.unsubscribe()

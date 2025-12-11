@@ -8,7 +8,7 @@ import { createPairing, getAllUsers } from '@/lib/services/database'
 import type { User } from '@/lib/types/database'
 
 export function CreatePairingForm() {
-  const { userProfile } = useAuth()
+  const { userProfile, loading: authLoading } = useAuth()
   const router = useRouter()
   const [mentors, setMentors] = useState<User[]>([])
   const [mentees, setMentees] = useState<User[]>([])
@@ -40,7 +40,9 @@ export function CreatePairingForm() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (userProfile?.role !== 'coordinator') {
+      if (authLoading) return
+      
+      if (!userProfile || userProfile.role !== 'coordinator') {
         setError(t('noPermission'))
         setLoading(false)
         return
@@ -57,7 +59,7 @@ export function CreatePairingForm() {
       setLoading(false)
     }
     fetchUsers()
-  }, [userProfile, t])
+  }, [userProfile, authLoading, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
