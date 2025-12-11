@@ -49,20 +49,15 @@ export function CoordinatorDashboard() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        console.log('Fetching platform analytics...')
         const { data, error } = await getPlatformAnalytics()
-        console.log('Analytics response:', { data, error })
         if (error) {
           console.error('Failed to fetch analytics via RPC:', error)
-          console.log('Falling back to manual data fetch...')
           
           // Fallback: fetch data manually using existing functions
           const [pairingsResult, usersResult] = await Promise.all([
             getAllPairings(),
             getAllUsers()
           ])
-          
-          console.log('Fallback data:', { pairingsResult, usersResult })
           
           if (!pairingsResult.error && !usersResult.error && pairingsResult.data && usersResult.data) {
             const activePairings = pairingsResult.data.filter(p => p.status === 'active').length
@@ -78,13 +73,11 @@ export function CoordinatorDashboard() {
               averageSessionRating: 0 // Would need separate query
             }
             
-            console.log('Setting fallback analytics:', fallbackAnalytics)
             setAnalytics(fallbackAnalytics)
           } else {
             console.error('Fallback fetch also failed:', { pairingsError: pairingsResult.error, usersError: usersResult.error })
           }
         } else {
-          console.log('Setting analytics data:', data)
           setAnalytics(data)
         }
       } catch (err) {
@@ -117,32 +110,26 @@ export function CoordinatorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.totalUsers.title')}</h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {analytics ? analytics.totalUsers : 'NO_ANALYTICS'}
-          </p>
+          <p className="text-3xl font-bold text-blue-600">{analytics?.totalUsers || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.totalUsers.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.activePairings.title')}</h3>
-          <p className="text-3xl font-bold text-green-600">
-            {analytics ? analytics.activePairings : 'NO_ANALYTICS'}
-          </p>
+          <p className="text-3xl font-bold text-green-600">{analytics?.activePairings || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.activePairings.subtitle')}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.sessions.title')}</h3>
-          <p className="text-3xl font-bold text-purple-600">
-            {analytics ? analytics.sessionsThisMonth : 'NO_ANALYTICS'}
-          </p>
+          <p className="text-3xl font-bold text-purple-600">{analytics?.sessionsThisMonth || 0}</p>
           <p className="text-sm text-gray-500">{t('stats.sessions.subtitle')}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('stats.completion.title')}</h3>
           <p className="text-3xl font-bold text-orange-600">
-            {analytics ? `${analytics.averageSessionRating.toFixed(1)}★` : 'NO_ANALYTICS'}
+            {analytics?.averageSessionRating ? `${analytics.averageSessionRating.toFixed(1)}★` : '0.0★'}
           </p>
           <p className="text-sm text-gray-500">{t('stats.completion.subtitle')}</p>
         </div>
