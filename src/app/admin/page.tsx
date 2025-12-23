@@ -10,14 +10,8 @@ export default function AdminPage() {
   const { userProfile, loading } = useAuth()
 
   useEffect(() => {
-    if (!loading) {
-      if (!userProfile) {
-        router.push('/login')
-      } else if (userProfile.role !== 'coordinator') {
-        router.push('/dashboard')
-      } else {
-        // Don't auto-redirect - show admin navigation
-      }
+    if (!loading && userProfile && userProfile.role !== 'coordinator') {
+      router.push('/dashboard')
     }
   }, [router, userProfile, loading])
 
@@ -32,7 +26,51 @@ export default function AdminPage() {
     )
   }
 
-  if (!userProfile || userProfile.role !== 'coordinator') {
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center space-y-8">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-blue-600 font-semibold">Coordinator Access</p>
+            <h1 className="mt-3 text-4xl font-bold text-gray-900">Private admin signup portal</h1>
+            <p className="mt-4 text-lg text-gray-600">
+              This page is reserved for program coordinators we&rsquo;ve invited to manage the mentoring program.
+              Use the secure signup link to create your coordinator account or sign in if you already have one.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Link
+              href="/register/coordinator"
+              className="block rounded-xl border border-blue-200 bg-white px-6 py-8 text-left shadow-sm hover:shadow-lg transition-shadow"
+            >
+              <div className="text-3xl mb-4">📝</div>
+              <h2 className="text-xl font-semibold text-gray-900">Request Coordinator Access</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Use the coordinator signup flow with the invitation email you received.
+              </p>
+            </Link>
+            <Link
+              href="/login"
+              className="block rounded-xl border border-gray-200 px-6 py-8 text-left hover:border-gray-300 transition-colors"
+            >
+              <div className="text-3xl mb-4">🔐</div>
+              <h2 className="text-xl font-semibold text-gray-900">Already have access?</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Sign in to continue coordinating mentor / mentee onboarding and program activities.
+              </p>
+            </Link>
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Didn&rsquo;t receive an invitation? Contact the Adviso program team so we can verify and onboard you.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (userProfile.role !== 'coordinator') {
     return null
   }
 

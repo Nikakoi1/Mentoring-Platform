@@ -31,23 +31,7 @@ export function ResetPasswordForm() {
       'error.passwordMismatch': 'Passwords do not match.',
       'error.passwordRequired': 'Password must be at least 6 characters long.',
       'error.failed': 'Failed to update password. The link may have expired. Please try again.',
-      'error.invalidLink': 'This password reset link is invalid or has expired.',
-      // Georgian translations
-      'ka.title': 'დააყენეთ ახალი პაროლი',
-      'ka.subtitle': 'შეიყვანეთ თქვენი ახალი პაროლი ქვემოთ.',
-      'ka.label.password': 'ახალი პაროლი',
-      'ka.placeholder.password': 'შეიყვანეთ თქვენი ახალი პაროლი',
-      'ka.label.confirmPassword': 'დაადასტურეთ პაროლი',
-      'ka.placeholder.confirmPassword': 'დაადასტურეთ თქვენი ახალი პაროლი',
-      'ka.cta.submit': 'პაროლის განახლება',
-      'ka.cta.loading': 'განახლება...',
-      'ka.success.title': 'პაროლი განახლებულია!',
-      'ka.success.message': 'თქვენი პაროლი წარმატებით განახლდა. ახლა შეგიძლიათ შეხვიდეთ თქვენი ახალი პაროლით.',
-      'ka.cta.signIn': 'შესვლა',
-      'ka.error.passwordMismatch': 'პაროლები არ ემთხვევა.',
-      'ka.error.passwordRequired': 'პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო.',
-      'ka.error.failed': 'პაროლის განახლება ვერ მოხერხდა. ბმული შეიძლება ვადაგასულია. გთხოვთ, სცადოთ თავიდან.',
-      'ka.error.invalidLink': 'ეს პაროლის აღდგენის ბმული არასწორია ან ვადაგასულია.'
+      'error.invalidLink': 'This password reset link is invalid or has expired.'
     }
   })
 

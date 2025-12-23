@@ -168,14 +168,16 @@ export function LoginForm() {
           {t('footer.prompt')}
         </p>
         {showBothOptions() ? (
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
-            <a href="/register/mentor" className="text-blue-600 hover:underline font-medium px-3 py-2 rounded hover:bg-blue-50 transition-colors leading-tight text-center" style={{ width: '120px' }}>
-              {t('register.mentor')}
-            </a>
-            <span className="text-gray-400 px-2">{t('register.or')}</span>
-            <a href="/register/mentee" className="text-green-600 hover:underline font-medium px-3 py-2 rounded hover:bg-green-50 transition-colors leading-tight text-center" style={{ width: '120px' }}>
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+            <a href="/register/mentee" className="text-green-600 hover:underline font-medium px-4 py-2 rounded hover:bg-green-50 transition-colors leading-tight text-center min-w-[140px]">
               {t('register.mentee')}
             </a>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-400 px-3 text-sm font-medium">{t('register.or')}</span>
+              <a href="/register/mentor" className="text-blue-600 hover:underline font-medium px-4 py-2 rounded hover:bg-blue-50 transition-colors leading-tight text-center min-w-[170px]">
+                {t('register.mentor')}
+              </a>
+            </div>
           </div>
         ) : (
           <a href={getRegistrationRedirect()} className="text-blue-600 hover:underline">

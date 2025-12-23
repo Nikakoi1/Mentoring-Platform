@@ -25,8 +25,8 @@ BEGIN
         p.mentee_id,
         p.coordinator_id,
         p.status,
-        p.start_date,
-        p.end_date,
+        p.start_date::timestamptz,
+        p.end_date::timestamptz,
         p.created_at,
         p.updated_at,
         jsonb_build_object(

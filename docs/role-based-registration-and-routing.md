@@ -14,6 +14,11 @@ The mentoring platform now supports dedicated registration pages for mentors and
   - Pre‑selects `role: 'mentee'`
   - Mentee‑specific messaging and branding (green theme)
   - Requires `full_name`, `email`, `password`, and `region`
+- **Coordinator registration**: `/register/coordinator`
+  - Pre‑selects `role: 'coordinator'`
+  - Coordinator‑specific messaging and branding
+  - Requires `full_name`, `email`, and `password` (no region required)
+  - Accessible via `/admin` landing page for invited coordinators
 - **General registration**: `/register` (unchanged)
   - Allows role selection via dropdown
   - Supports `mentor`, `mentee`, and `coordinator` roles
@@ -50,12 +55,23 @@ src/app/
 │   ├── page.tsx                 # General registration (unchanged)
 │   ├── mentor/
 │   │   └── page.tsx             # Mentor registration page
-│   └── mentee/
-│       └── page.tsx             # Mentee registration page
+│   ├── mentee/
+│   │   └── page.tsx             # Mentee registration page
+│   └── coordinator/
+│       └── page.tsx             # Coordinator registration page
+├── join/
+│   ├── mentor/
+│   │   └── page.tsx             # Redirects to /register/mentor
+│   ├── mentee/
+│   │   └── page.tsx             # Redirects to /register/mentee
+│   └── coordinator/
+│       └── page.tsx             # Redirects to /register/coordinator
 ├── login/
 │   └── page.tsx                 # Sign‑in page with role‑based redirect
 ├── dashboard/
 │   └── page.tsx                 # Unified dashboard with role‑specific UI
+├── admin/
+│   └── page.tsx                 # Admin landing page with coordinator signup portal
 ├── mentor/
 │   └── page.tsx                 # Auto‑redirects to /mentor/mentees
 └── mentee/
@@ -64,15 +80,18 @@ src/app/
 src/components/auth/
 ├── RegisterForm.tsx             # General registration form
 ├── MentorRegisterForm.tsx       # Mentor‑specific form
-└── MenteeRegisterForm.tsx       # Mentee‑specific form
+├── MenteeRegisterForm.tsx       # Mentee‑specific form
+└── CoordinatorRegisterForm.tsx  # Coordinator‑specific form
 ```
 
 ## Implementation Details
 
 ### Registration Flow
-1. User visits `/register/mentor` or `/register/mentee`
+1. User visits `/register/mentor`, `/register/mentee`, or `/register/coordinator`
 2. Form pre‑selects the appropriate role and hides the role selector
-3. User fills in required fields
+3. User fills in required fields:
+   - Mentor/mentee: `full_name`, `email`, `password`, `region`
+   - Coordinator: `full_name`, `email`, `password` (no region required)
 4. On submission, `supabase.auth.signUp()` is called with:
    ```js
    {
@@ -81,13 +100,13 @@ src/components/auth/
      options: {
        data: {
          full_name: fullName,
-         role: 'mentor' | 'mentee',
-         region
+         role: 'mentor' | 'mentee' | 'coordinator',
+         region // only for mentor/mentee
        }
      }
    }
    ```
-5. Success shows localized alert and redirects to `/login`
+5. Success shows localized alert and redirects to `/login?from=<role>`
 6. Duplicate email errors are caught and displayed with localized messages
 
 ### Authentication Flow
@@ -109,6 +128,8 @@ src/components/auth/
 ### Shareable Registration Links
 - Invite mentors: `https://your-app.vercel.app/register/mentor`
 - Invite mentees: `https://your-app.vercel.app/register/mentee`
+- Invite coordinators: `https://your-app.vercel.app/admin` (shows coordinator signup portal)
+- Direct coordinator registration: `https://your-app.vercel.app/register/coordinator`
 
 ### Navigation Updates
 - Homepage now shows two registration CTAs:
@@ -148,5 +169,5 @@ src/components/auth/
 ## Future Enhancements
 - Add email verification flow before allowing role selection
 - Implement role‑specific onboarding tours
-- Add analytics to track registration source (mentor vs mentee links)
+- Add analytics to track registration source (mentor vs mentee vs coordinator links)
 - Support more roles (e.g., `admin`, `moderator`) with dedicated registration flows

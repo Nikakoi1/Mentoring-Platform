@@ -25,19 +25,7 @@ export default function ForgotPasswordPage() {
       'success.message': 'Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.',
       'cta.backToLogin': 'Back to Login',
       'error.invalidEmail': 'Please enter a valid email address.',
-      'error.failed': 'Failed to send reset link. Please try again.',
-      // Georgian translations
-      'ka.title': 'აღადგინეთ თქვენი პაროლი',
-      'ka.subtitle': 'შეიყვანეთ თქვენი ელფოსტის მისამართი და ჩვენ გამოგიგზავნით ბმულს პაროლის აღსადგენად.',
-      'ka.label.email': 'ელფოსტა',
-      'ka.placeholder.email': 'შეიყვანეთ თქვენი ელფოსტა',
-      'ka.cta.submit': 'აღდგენის ბმულის გაგზავნა',
-      'ka.cta.loading': 'გაგზავნა...',
-      'ka.success.title': 'აღდგენის ბმული გაგზავნილია!',
-      'ka.success.message': 'შეამოწმეთ თქვენი ელფოსტა პაროლის აღსადგენი ბმულისთვის. თუ ის რამდენიმე წუთში არ გამოჩნდება, შეამოწმეთ სპამ ფოლდერი.',
-      'ka.cta.backToLogin': 'შესვლის გვერდზე დაბრუნება',
-      'ka.error.invalidEmail': 'გთხოვთ, შეიყვანოთ სწორი ელფოსტის მისამართი.',
-      'ka.error.failed': 'აღდგენის ბმულის გაგზავნა ვერ მოხერხდა. გთხოვთ, სცადოთ თავიდან.'
+      'error.failed': 'Failed to send reset link. Please try again.'
     }
   })
 
