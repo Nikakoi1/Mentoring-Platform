@@ -16,44 +16,44 @@ const reportTypeToView: Record<ReportType, string> = {
 }
 
 export async function GET(request: NextRequest) {
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-
-  const {
-    data: { user },
-    error: authError
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: userRow, error: userRowError } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  if (userRowError) {
-    return NextResponse.json({ error: userRowError.message }, { status: 500 })
-  }
-
-  if (userRow?.role !== 'coordinator') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { searchParams } = new URL(request.url)
-  const reportType = searchParams.get('type') as ReportType | null
-  const startDate = searchParams.get('startDate')
-  const endDate = searchParams.get('endDate')
-
-  if (!reportType || !(reportType in reportTypeToView)) {
-    return NextResponse.json({ error: 'Invalid report type' }, { status: 400 })
-  }
-
-  const viewName = reportTypeToView[reportType]
-
   try {
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: userRow, error: userRowError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (userRowError) {
+      return NextResponse.json({ error: userRowError.message }, { status: 500 })
+    }
+
+    if (userRow?.role !== 'coordinator') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const reportType = searchParams.get('type') as ReportType | null
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
+
+    if (!reportType || !(reportType in reportTypeToView)) {
+      return NextResponse.json({ error: 'Invalid report type' }, { status: 400 })
+    }
+
+    const viewName = reportTypeToView[reportType]
+
     const { supabaseAdmin } = await import('@/lib/supabase/admin')
 
     let query = supabaseAdmin.from(viewName).select('*')
