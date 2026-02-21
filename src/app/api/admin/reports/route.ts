@@ -50,27 +50,40 @@ export async function GET(request: NextRequest) {
 
   const viewName = reportTypeToView[reportType]
 
-  const { supabaseAdmin } = await import('@/lib/supabase/admin')
+  try {
+    const { supabaseAdmin } = await import('@/lib/supabase/admin')
 
-  let query = supabaseAdmin.from(viewName).select('*')
+    let query = supabaseAdmin.from(viewName).select('*')
 
-  if (startDate && endDate) {
-    if (reportType === 'sessions') {
-      query = query.gte('scheduled_at', startDate).lte('scheduled_at', endDate)
-    } else if (reportType === 'session_evaluations') {
-      query = query.gte('session_scheduled_at', startDate).lte('session_scheduled_at', endDate)
-    } else if (reportType === 'client_visits') {
-      query = query.gte('scheduled_at', startDate).lte('scheduled_at', endDate)
-    } else if (reportType === 'clients') {
-      query = query.gte('created_at', startDate).lte('created_at', endDate)
+    if (startDate && endDate) {
+      if (reportType === 'sessions') {
+        query = query.gte('scheduled_at', startDate).lte('scheduled_at', endDate)
+      } else if (reportType === 'session_evaluations') {
+        query = query.gte('session_scheduled_at', startDate).lte('session_scheduled_at', endDate)
+      } else if (reportType === 'client_visits') {
+        query = query.gte('scheduled_at', startDate).lte('scheduled_at', endDate)
+      } else if (reportType === 'clients') {
+        query = query.gte('created_at', startDate).lte('created_at', endDate)
+      }
     }
+
+    const { data, error } = await query
+
+    if (error) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          details: (error as { details?: string }).details,
+          hint: (error as { hint?: string }).hint,
+          code: (error as { code?: string }).code
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ data: data ?? [] })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  const { data, error } = await query
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ data: data ?? [] })
 }
