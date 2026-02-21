@@ -115,6 +115,7 @@ export function ReportingDashboard() {
   const [allMentors, setAllMentors] = useState<MentorOption[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [exporting, setExporting] = useState(false)
   const [expandedMentors, setExpandedMentors] = useState<Set<string>>(new Set())
   const [expandedMentees, setExpandedMentees] = useState<Set<string>>(new Set())
   const [menteeSessions, setMenteeSessions] = useState<Record<string, SessionDetail[]>>({})
@@ -295,13 +296,55 @@ export function ReportingDashboard() {
     setMentorDropdownOpen(false)
   }
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (analytics.length === 0) {
       console.warn('No analytics data available to export')
       return
     }
 
+    if (exporting) {
+      return
+    }
+
+    setExporting(true)
+
     const workbook = XLSX.utils.book_new()
+
+    const fetchReportRows = async (
+      type: 'sessions' | 'session_evaluations' | 'client_visits' | 'clients'
+    ): Promise<Record<string, unknown>[]> => {
+      const params = new URLSearchParams({
+        type,
+        startDate: appliedFilters.startDate,
+        endDate: appliedFilters.endDate
+      })
+
+      const response = await fetch(`/api/admin/reports?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      const contentType = response.headers.get('content-type') ?? ''
+      const isJson = contentType.includes('application/json')
+
+      if (!response.ok) {
+        if (isJson) {
+          const body = (await response.json()) as { error?: string; details?: string; hint?: string }
+          const message = [body.error, body.details, body.hint].filter(Boolean).join(' - ')
+          throw new Error(message || `Failed to load report (HTTP ${response.status})`)
+        }
+        const text = await response.text()
+        throw new Error(text ? `HTTP ${response.status}: ${text}` : `Failed to load report (HTTP ${response.status})`)
+      }
+
+      if (!isJson) {
+        const text = await response.text()
+        throw new Error(text ? `Unexpected response format: ${text}` : 'Unexpected response format')
+      }
+
+      const body = (await response.json()) as { data?: Record<string, unknown>[] }
+      return body.data ?? []
+    }
 
     // Sheet 1: Mentor summary
     const mentorSummary = analytics.map((mentor) => ({
@@ -353,8 +396,63 @@ export function ReportingDashboard() {
     ])
     XLSX.utils.book_append_sheet(workbook, filtersSheet, 'Filters')
 
+    const exportErrors: { sheet: string; error: string }[] = []
+
+    try {
+      const sessions = await fetchReportRows('sessions')
+      if (sessions.length > 0) {
+        const sessionsSheet = XLSX.utils.json_to_sheet(sessions)
+        XLSX.utils.book_append_sheet(workbook, sessionsSheet, 'Sessions')
+      }
+    } catch (err) {
+      exportErrors.push({ sheet: 'Sessions', error: err instanceof Error ? err.message : 'Failed to load sessions' })
+    }
+
+    try {
+      const evaluations = await fetchReportRows('session_evaluations')
+      if (evaluations.length > 0) {
+        const evaluationsSheet = XLSX.utils.json_to_sheet(evaluations)
+        XLSX.utils.book_append_sheet(workbook, evaluationsSheet, 'Evaluations')
+      }
+    } catch (err) {
+      exportErrors.push({
+        sheet: 'Evaluations',
+        error: err instanceof Error ? err.message : 'Failed to load evaluations'
+      })
+    }
+
+    try {
+      const visits = await fetchReportRows('client_visits')
+      if (visits.length > 0) {
+        const visitsSheet = XLSX.utils.json_to_sheet(visits)
+        XLSX.utils.book_append_sheet(workbook, visitsSheet, 'Client Visits')
+      }
+    } catch (err) {
+      exportErrors.push({
+        sheet: 'Client Visits',
+        error: err instanceof Error ? err.message : 'Failed to load client visits'
+      })
+    }
+
+    try {
+      const clients = await fetchReportRows('clients')
+      if (clients.length > 0) {
+        const clientsSheet = XLSX.utils.json_to_sheet(clients)
+        XLSX.utils.book_append_sheet(workbook, clientsSheet, 'Clients')
+      }
+    } catch (err) {
+      exportErrors.push({ sheet: 'Clients', error: err instanceof Error ? err.message : 'Failed to load clients' })
+    }
+
+    if (exportErrors.length > 0) {
+      const errorsSheet = XLSX.utils.json_to_sheet(exportErrors)
+      XLSX.utils.book_append_sheet(workbook, errorsSheet, 'Export Errors')
+    }
+
     const fileName = `mentor-analytics-${appliedFilters.startDate}-to-${appliedFilters.endDate}.xlsx`
     XLSX.writeFile(workbook, fileName)
+
+    setExporting(false)
   }
 
   const fetchRawReport = async () => {
@@ -458,10 +556,11 @@ export function ReportingDashboard() {
           <h1 className="text-2xl font-bold">{t('header.title')}</h1>
           <button
             onClick={exportToExcel}
+            disabled={exporting}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <Download className="w-4 h-4" />
-            {t('export.excel')}
+            {exporting ? 'Exporting...' : t('export.excel')}
           </button>
         </div>
 
