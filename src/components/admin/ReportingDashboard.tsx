@@ -118,6 +118,10 @@ export function ReportingDashboard() {
   const [expandedMentors, setExpandedMentors] = useState<Set<string>>(new Set())
   const [expandedMentees, setExpandedMentees] = useState<Set<string>>(new Set())
   const [menteeSessions, setMenteeSessions] = useState<Record<string, SessionDetail[]>>({})
+  const [rawReportType, setRawReportType] = useState<'sessions' | 'session_evaluations' | 'client_visits' | 'clients'>('sessions')
+  const [rawReportRows, setRawReportRows] = useState<Record<string, unknown>[]>([])
+  const [rawReportLoading, setRawReportLoading] = useState(false)
+  const [rawReportError, setRawReportError] = useState('')
   const isCoordinator = userProfile?.role === 'coordinator'
   
   const initialStartDate = useMemo(() => {
@@ -351,6 +355,78 @@ export function ReportingDashboard() {
 
     const fileName = `mentor-analytics-${appliedFilters.startDate}-to-${appliedFilters.endDate}.xlsx`
     XLSX.writeFile(workbook, fileName)
+  }
+
+  const fetchRawReport = async () => {
+    setRawReportError('')
+    setRawReportLoading(true)
+    try {
+      const params = new URLSearchParams({
+        type: rawReportType,
+        startDate: appliedFilters.startDate,
+        endDate: appliedFilters.endDate
+      })
+
+      const response = await fetch(`/api/admin/reports?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      const body = (await response.json()) as { data?: Record<string, unknown>[]; error?: string }
+      if (!response.ok) {
+        throw new Error(body.error || 'Failed to load report')
+      }
+
+      setRawReportRows(body.data ?? [])
+    } catch (err) {
+      setRawReportRows([])
+      setRawReportError(err instanceof Error ? err.message : 'Failed to load report')
+    } finally {
+      setRawReportLoading(false)
+    }
+  }
+
+  const exportRawReportToCsv = () => {
+    if (!rawReportRows.length) {
+      return
+    }
+
+    const headers = Object.keys(rawReportRows[0])
+
+    const escapeCsv = (value: unknown) => {
+      if (value === null || value === undefined) return ''
+      if (typeof value === 'object') {
+        try {
+          return JSON.stringify(value)
+        } catch {
+          return String(value)
+        }
+      }
+      return String(value)
+    }
+
+    const csvLines = [
+      headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(','),
+      ...rawReportRows.map((row) =>
+        headers
+          .map((h) => {
+            const cell = escapeCsv((row as Record<string, unknown>)[h])
+            return `"${cell.replace(/"/g, '""')}"`
+          })
+          .join(',')
+      )
+    ].join('\n')
+
+    const bom = '\uFEFF'
+    const blob = new Blob([bom + csvLines], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${rawReportType}-${appliedFilters.startDate}-to-${appliedFilters.endDate}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   }
 
   if (loading) {
@@ -663,6 +739,86 @@ export function ReportingDashboard() {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-gray-200 pt-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-xl font-bold">Raw Reports</h2>
+              <p className="text-sm text-gray-600">Download the underlying report views (Excel-safe Georgian CSV).</p>
+            </div>
+            <div className="flex flex-col gap-2 md:flex-row md:items-end">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Report</label>
+                <select
+                  value={rawReportType}
+                  onChange={(e) => setRawReportType(e.target.value as typeof rawReportType)}
+                  className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="sessions">Sessions</option>
+                  <option value="session_evaluations">Session Evaluations</option>
+                  <option value="client_visits">Client Visits</option>
+                  <option value="clients">Clients</option>
+                </select>
+              </div>
+              <button
+                onClick={fetchRawReport}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                disabled={rawReportLoading}
+              >
+                {rawReportLoading ? 'Loading...' : 'Load'}
+              </button>
+              <button
+                onClick={exportRawReportToCsv}
+                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors"
+                disabled={!rawReportRows.length}
+              >
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          {rawReportError && (
+            <div className="mt-4 text-red-600 bg-red-50 rounded-lg p-4">{rawReportError}</div>
+          )}
+
+          <div className="mt-4 overflow-auto border border-gray-200 rounded-lg">
+            {rawReportRows.length === 0 ? (
+              <div className="p-6 text-sm text-gray-500">No rows loaded.</div>
+            ) : (
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {Object.keys(rawReportRows[0]).map((key) => (
+                      <th key={key} className="text-left px-3 py-2 font-semibold text-gray-700 whitespace-nowrap">
+                        {key}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rawReportRows.map((row, idx) => (
+                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      {Object.keys(rawReportRows[0]).map((key) => {
+                        const value = (row as Record<string, unknown>)[key]
+                        const display =
+                          value === null || value === undefined
+                            ? ''
+                            : typeof value === 'object'
+                              ? JSON.stringify(value)
+                              : String(value)
+                        return (
+                          <td key={key} className="px-3 py-2 whitespace-nowrap">
+                            {display}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
