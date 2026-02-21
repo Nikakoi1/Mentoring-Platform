@@ -308,7 +308,8 @@ export function ReportingDashboard() {
 
     setExporting(true)
 
-    const workbook = XLSX.utils.book_new()
+    try {
+      const workbook = XLSX.utils.book_new()
 
     const fetchReportRows = async (
       type: 'sessions' | 'session_evaluations' | 'client_visits' | 'clients'
@@ -449,10 +450,11 @@ export function ReportingDashboard() {
       XLSX.utils.book_append_sheet(workbook, errorsSheet, 'Export Errors')
     }
 
-    const fileName = `mentor-analytics-${appliedFilters.startDate}-to-${appliedFilters.endDate}.xlsx`
-    XLSX.writeFile(workbook, fileName)
-
-    setExporting(false)
+      const fileName = `mentor-analytics-${appliedFilters.startDate}-to-${appliedFilters.endDate}.xlsx`
+      XLSX.writeFile(workbook, fileName)
+    } finally {
+      setExporting(false)
+    }
   }
 
   const fetchRawReport = async () => {
