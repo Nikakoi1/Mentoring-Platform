@@ -3,6 +3,9 @@ import type { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 type ReportType = 'sessions' | 'session_evaluations' | 'client_visits' | 'clients'
 
 const reportTypeToView: Record<ReportType, string> = {

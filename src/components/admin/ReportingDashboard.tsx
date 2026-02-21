@@ -372,11 +372,25 @@ export function ReportingDashboard() {
         credentials: 'include'
       })
 
-      const body = (await response.json()) as { data?: Record<string, unknown>[]; error?: string }
+      const contentType = response.headers.get('content-type') ?? ''
+      const isJson = contentType.includes('application/json')
+
       if (!response.ok) {
-        throw new Error(body.error || 'Failed to load report')
+        if (isJson) {
+          const body = (await response.json()) as { error?: string; details?: string; hint?: string }
+          const message = [body.error, body.details, body.hint].filter(Boolean).join(' - ')
+          throw new Error(message || `Failed to load report (HTTP ${response.status})`)
+        }
+        const text = await response.text()
+        throw new Error(text ? `HTTP ${response.status}: ${text}` : `Failed to load report (HTTP ${response.status})`)
       }
 
+      if (!isJson) {
+        const text = await response.text()
+        throw new Error(text ? `Unexpected response format: ${text}` : 'Unexpected response format')
+      }
+
+      const body = (await response.json()) as { data?: Record<string, unknown>[] }
       setRawReportRows(body.data ?? [])
     } catch (err) {
       setRawReportRows([])
