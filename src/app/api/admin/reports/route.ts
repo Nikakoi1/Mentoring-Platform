@@ -17,21 +17,34 @@ const reportTypeToView: Record<ReportType, string> = {
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient({
-      cookies: () => cookieStore
-    } as any)
+    const authHeader = request.headers.get('authorization')
+    const bearerToken = authHeader?.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : null
 
-    const {
-      data: { user },
-      error: authError
-    } = await supabase.auth.getUser()
+    const { supabaseAdmin } = await import('@/lib/supabase/admin')
+
+    let user: { id: string } | null = null
+    let authError: { message?: string } | null = null
+
+    if (bearerToken) {
+      const { data, error } = await supabaseAdmin.auth.getUser(bearerToken)
+      user = data.user ? { id: data.user.id } : null
+      authError = error ? { message: error.message } : null
+    } else {
+      const cookieStore = await cookies()
+      const supabase = createRouteHandlerClient({
+        cookies: () => cookieStore
+      } as any)
+
+      const { data, error } = await supabase.auth.getUser()
+      user = data.user ? { id: data.user.id } : null
+      authError = error ? { message: error.message } : null
+    }
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: userRow, error: userRowError } = await supabase
+    const { data: userRow, error: userRowError } = await supabaseAdmin
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -55,8 +68,6 @@ export async function GET(request: NextRequest) {
     }
 
     const viewName = reportTypeToView[reportType]
-
-    const { supabaseAdmin } = await import('@/lib/supabase/admin')
 
     let query = supabaseAdmin.from(viewName).select('*')
 

@@ -65,7 +65,7 @@ interface MentorOption {
 }
 
 export function ReportingDashboard() {
-  const { userProfile } = useAuth()
+  const { userProfile, session } = useAuth()
   const { t } = useTranslations({ 
     namespace: 'admin.reports', 
     defaults: {
@@ -311,6 +311,8 @@ export function ReportingDashboard() {
     try {
       const workbook = XLSX.utils.book_new()
 
+      const accessToken = session?.access_token
+
     const fetchReportRows = async (
       type: 'sessions' | 'session_evaluations' | 'client_visits' | 'clients'
     ): Promise<Record<string, unknown>[]> => {
@@ -322,7 +324,8 @@ export function ReportingDashboard() {
 
       const response = await fetch(`/api/admin/reports?${params.toString()}`, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
       })
 
       const contentType = response.headers.get('content-type') ?? ''
@@ -461,6 +464,7 @@ export function ReportingDashboard() {
     setRawReportError('')
     setRawReportLoading(true)
     try {
+      const accessToken = session?.access_token
       const params = new URLSearchParams({
         type: rawReportType,
         startDate: appliedFilters.startDate,
@@ -469,7 +473,8 @@ export function ReportingDashboard() {
 
       const response = await fetch(`/api/admin/reports?${params.toString()}`, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
       })
 
       const contentType = response.headers.get('content-type') ?? ''
